@@ -1,0 +1,24 @@
+#######################################
+# Syntax Coloring Map
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+WalnutCentral KEYWORD1
+
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+begin KEYWORD2
+startScan KEYWORD2
+sendString KEYWORD2
+receiveString KEYWORD2
+
+
+#######################################
+# Constants (LITERAL1)
+#######################################
