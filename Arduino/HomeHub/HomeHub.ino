@@ -69,21 +69,28 @@ const unsigned long WIFI_CHECK_INTERVAL_MS = 5000;
 unsigned long lastWifiCheckTime;
 
 
+/**
+ * Run once initialization
+ */
 void setup() 
 {
     initGPIO();
     initDebugUart();
-    //initBLE();
+    initBLE();
     initWifi();
     lastBlinkTime = millis();
     lastWifiCheckTime = millis();
 }
 
+
+/**
+ * Main loop
+ */
 void loop() 
 {
     // Check if there is incoming data from BLE-module
     if (Serial1.available()) {
-        // TODO: Handle data from BLE-module
+        handleBLEData();
     }
 
     // TODO: Check if there is incoming data from cloud?
@@ -103,6 +110,9 @@ void loop()
 }
 
 
+/**
+ * Function that initializes the GPIOs
+ */
 void initGPIO()
 {
     // Initialize reset pin for the BLE-module
@@ -115,6 +125,9 @@ void initGPIO()
 }
 
 
+/**
+ * Function that initializes the debug UART aka Serial
+ */
 void initDebugUart() 
 {
   delay(2000);
@@ -133,7 +146,6 @@ void initBLE()
   
   // Initialize the BLE module
   Serial.println("Initializing BLE-module ...");
-  Serial1.begin(115200);
   Serial1.begin(921600);
   delay(100);
   err_code = ble.begin(Serial1, BLE_RST_PIN);
@@ -175,11 +187,29 @@ void initWifi()
     // Connect to WPA/WPA2 network. Change this line if using open or WEP network:
     status = WiFi.begin(ssid, pass);
 
-    // wait 10 seconds for connection:
+    // wait 1 second for connection:
     delay(1000);
   }
   // you're connected now, so print out the status:
   printWifiStatus();
+}
+
+
+/**
+ * Function that handles incoming sensor data from the BLE-module
+ * and passes it on to the cloud.
+ */
+void handleBLEData() {
+    char rx[50];
+    Serial1.setTimeout(1000);
+    int len = Serial1.readBytesUntil('\n', rx, 50);
+    if (len == 0) {
+        // Timeout occured, ignore received data
+    } else {
+        // TODO: Investigate if anything needs to be done to CR at the end of the rx array
+        Serial.print(rx);
+        // TODO: Send data or add to send buffer
+    }
 }
 
 
