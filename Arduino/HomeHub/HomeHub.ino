@@ -113,7 +113,7 @@ void loop()
 /**
  * Function that initializes the GPIOs
  */
-void initGPIO()
+void initGPIO() 
 {
     // Initialize reset pin for the BLE-module
     pinMode(BLE_RST_PIN, OUTPUT);
@@ -130,36 +130,36 @@ void initGPIO()
  */
 void initDebugUart() 
 {
-  delay(2000);
-  Serial.begin(115200);
-  while (!Serial) {
-    ; // wait for serial port to connect. Needed for native USB
-    delay(100);
-  }
-  Serial.println("Booting up HomeHubNew ...");
+    delay(2000);
+    Serial.begin(115200);
+    while (!Serial) {
+        ; // wait for serial port to connect. Needed for native USB
+        delay(100);
+    }
+    Serial.println("Booting up HomeHubNew ...");
 }
 
 
 void initBLE() 
 {
-  int err_code;
+    int err_code;
   
-  // Initialize the BLE module
-  Serial.println("Initializing BLE-module ...");
-  Serial1.begin(921600);
-  delay(100);
-  err_code = ble.begin(Serial1, BLE_RST_PIN);
-  if (err_code != 0) {
-    Serial.println("BLE-module initialization FAILED! Halting ...");
-    //exit(0);
-  }
+    // Initialize the BLE module
+    Serial.println("Initializing BLE-module ...");
+    Serial1.begin(921600);
+    delay(100);
+    err_code = ble.begin(Serial1, BLE_RST_PIN);
+    if (err_code != 0) {
+        Serial.println("BLE-module initialization FAILED! Halting ...");
+        //exit(0);
+    }
 
-  delay(10);
-  Serial.println("Stopping BLE scan ...");
-  err_code = ble.stopScan();
-  if (err_code != 0) {
-    Serial.println("Stopping BLE scan FAILED!");
-  }
+    delay(10);
+    Serial.println("Stopping BLE scan ...");
+    err_code = ble.stopScan();
+    if (err_code != 0) {
+        Serial.println("Stopping BLE scan FAILED!");
+    }
 }
 
 
@@ -172,26 +172,26 @@ void initWifi()
     digitalWrite(WINC_EN, HIGH);
 #endif
     
-  // check for the presence of the shield:
-  if (WiFi.status() == WL_NO_SHIELD) {
-    Serial.println("WiFi shield not present");
-    // don't continue:
-    exit(0);
-    //while (true);
-  }
+    // check for the presence of the shield:
+    if (WiFi.status() == WL_NO_SHIELD) {
+        Serial.println("WiFi shield not present");
+        // don't continue:
+        exit(0);
+    }
 
-  // attempt to connect to Wifi network:
-  while ( status != WL_CONNECTED) {
-    Serial.print("Attempting to connect to SSID: ");
-    Serial.println(ssid);
-    // Connect to WPA/WPA2 network. Change this line if using open or WEP network:
-    status = WiFi.begin(ssid, pass);
+    // attempt to connect to Wifi network:
+    while ( status != WL_CONNECTED) {
+        Serial.print("Attempting to connect to SSID: ");
+        Serial.println(ssid);
+        // Connect to WPA/WPA2 network. Change this line if using open or WEP network:
+        status = WiFi.begin(ssid, pass);
 
-    // wait 1 second for connection:
-    delay(1000);
-  }
-  // you're connected now, so print out the status:
-  printWifiStatus();
+        // wait 1 second for connection:
+        delay(1000);
+    }
+    
+    // you're connected now, so print out the status:
+    printWifiStatus();
 }
 
 
@@ -199,7 +199,8 @@ void initWifi()
  * Function that handles incoming sensor data from the BLE-module
  * and passes it on to the cloud.
  */
-void handleBLEData() {
+void handleBLEData() 
+{
     char rx[50];
     Serial1.setTimeout(1000);
     int len = Serial1.readBytesUntil('\n', rx, 50);
@@ -276,20 +277,20 @@ void printWifiStatus() {
             break;
     }
 
-  // print the SSID of the network you're attached to:
-  Serial.print("SSID: ");
-  Serial.println(WiFi.SSID());
+    // print the SSID of the network you're attached to:
+    Serial.print("SSID: ");
+    Serial.println(WiFi.SSID());
 
-  // print your WiFi shield's IP address:
-  IPAddress ip = WiFi.localIP();
-  Serial.print("IP Address: ");
-  Serial.println(ip);
+    // print your WiFi shield's IP address:
+    IPAddress ip = WiFi.localIP();
+    Serial.print("IP Address: ");
+    Serial.println(ip);
 
-  // print the received signal strength:
-  long rssi = WiFi.RSSI();
-  Serial.print("signal strength (RSSI):");
-  Serial.print(rssi);
-  Serial.println(" dBm");
-  Serial.println();
+    // print the received signal strength:
+    long rssi = WiFi.RSSI();
+    Serial.print("signal strength (RSSI):");
+    Serial.print(rssi);
+    Serial.println(" dBm");
+    Serial.println();
 }
 
