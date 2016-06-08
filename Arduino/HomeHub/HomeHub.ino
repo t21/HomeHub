@@ -27,12 +27,12 @@
     
     const int BLE_RST_PIN = 7;  // TODO: Check correct pin
 #else
+  #include <SPI.h>
   #include <WiFi101.h>
-  #include <WiFiClient.h>
-  #include <WiFiMDNSResponder.h>
-  #include <WiFiServer.h>
-  #include <WiFiSSLClient.h>
-  #include <WiFiUdp.h>
+
+  // Initialize the Wifi client library
+  WiFiClient wifiClient;
+  
   const int BLE_RST_PIN = 7;
 #endif
 
@@ -65,7 +65,7 @@ const unsigned long BLINK_INTERVAL_MS = 1000;
 unsigned long lastBlinkTime;
 byte blinkLedStatus = 0;
 
-const unsigned long WIFI_CHECK_INTERVAL_MS = 5000;
+const unsigned long WIFI_CHECK_INTERVAL_MS = 10000;
 unsigned long lastWifiCheckTime;
 
 
@@ -144,22 +144,37 @@ void initBLE()
 {
     int err_code;
   
-    // Initialize the BLE module
-    Serial.println("Initializing BLE-module ...");
-    Serial1.begin(921600);
-    delay(100);
-    err_code = ble.begin(Serial1, BLE_RST_PIN);
-    if (err_code != 0) {
-        Serial.println("BLE-module initialization FAILED! Halting ...");
-        //exit(0);
-    }
+  // Initialize the BLE module
+  Serial.println("Initializing BLE-module ...");
+  Serial1.begin(115200);
+  delay(100);
+  err_code = ble.begin(Serial1, BLE_RST_PIN);
+  if (err_code != 0) {
+    Serial.println("BLE-module initialization FAILED! Halting ...");
+    //exit(0);
+  }
 
-    delay(10);
-    Serial.println("Stopping BLE scan ...");
-    err_code = ble.stopScan();
-    if (err_code != 0) {
-        Serial.println("Stopping BLE scan FAILED!");
-    }
+//  delay(100);
+//  Serial.println("Stopping BLE scan ...");
+//  err_code = ble.stopScan();
+//  if (err_code != 0) {
+//    Serial.println("Stopping BLE scan FAILED!");
+//  }
+
+  delay(100);
+  Serial.println("Adding device to scanlist ...");
+  err_code = ble.addDevice();
+  if (err_code != 0) {
+    Serial.println("Stopping BLE scan FAILED!");
+  }
+
+  delay(100);
+  Serial.println("Starting BLE scan ...");
+  err_code = ble.startScan();
+  if (err_code != 0) {
+    Serial.println("Starting BLE scan FAILED!");
+  }
+
 }
 
 
@@ -188,6 +203,7 @@ void initWifi()
 
         // wait 1 second for connection:
         delay(1000);
+        Serial.print('.');
     }
     
     // you're connected now, so print out the status:
