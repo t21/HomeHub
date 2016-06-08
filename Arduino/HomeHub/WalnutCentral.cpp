@@ -96,8 +96,35 @@ int WalnutCentral::stopScan() {
 }
 
 
+int WalnutCentral::addDevice() {
+  char tx[MAX_BUF_SIZE];
+  char rx[MAX_BUF_SIZE];
+  int rx_len = 0;
+  
+  strcpy(tx, "AT+DEVADD=D5:A9:E3:C1:1B:A4");
+  
+  int err_code = sendString(tx, strlen(tx));
+  if (err_code != 0) {
+    return err_code;
+  }
+  
+  err_code = receiveString(rx, &rx_len);
+  if (err_code != 0) {
+    return err_code;
+  }
+  //Serial.println(rx);
+
+  if (strcmp(rx, "OK") == 0) {
+    return 0;
+  } else {
+    return 1;
+  }
+}
+
+
 int WalnutCentral::sendString(char *tx, int tx_len) 
 {
+  Serial.println(tx);
   int nbr_of_bytes_sent = _serial->println(tx);
   
   if (nbr_of_bytes_sent == (tx_len + 2)) {
