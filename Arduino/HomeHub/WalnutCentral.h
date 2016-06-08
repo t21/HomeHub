@@ -11,6 +11,7 @@ class WalnutCentral {
     int begin(Stream &serial, const int rstPin);
     int startScan();
     int stopScan();
+    int setScanParameters();
     int addDevice();
 
   private:

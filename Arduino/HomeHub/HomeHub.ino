@@ -76,8 +76,11 @@ void setup()
 {
     initGPIO();
     initDebugUart();
-    initBLE();
     initWifi();
+    initBLE();
+    addBLEDevices();
+    setBLEScanParameters();
+    startBLEScan();
     lastBlinkTime = millis();
     lastWifiCheckTime = millis();
 }
@@ -144,37 +147,15 @@ void initBLE()
 {
     int err_code;
   
-  // Initialize the BLE module
-  Serial.println("Initializing BLE-module ...");
-  Serial1.begin(115200);
-  delay(100);
-  err_code = ble.begin(Serial1, BLE_RST_PIN);
-  if (err_code != 0) {
-    Serial.println("BLE-module initialization FAILED! Halting ...");
-    //exit(0);
-  }
-
-//  delay(100);
-//  Serial.println("Stopping BLE scan ...");
-//  err_code = ble.stopScan();
-//  if (err_code != 0) {
-//    Serial.println("Stopping BLE scan FAILED!");
-//  }
-
-  delay(100);
-  Serial.println("Adding device to scanlist ...");
-  err_code = ble.addDevice();
-  if (err_code != 0) {
-    Serial.println("Stopping BLE scan FAILED!");
-  }
-
-  delay(100);
-  Serial.println("Starting BLE scan ...");
-  err_code = ble.startScan();
-  if (err_code != 0) {
-    Serial.println("Starting BLE scan FAILED!");
-  }
-
+    // Initialize the BLE module
+    Serial.println("Initializing BLE-module ...");
+    Serial1.begin(115200);
+    delay(100);
+    err_code = ble.begin(Serial1, BLE_RST_PIN);
+    if (err_code != 0) {
+        Serial.println("BLE-module initialization FAILED! Halting ...");
+        //exit(0);
+    }
 }
 
 
@@ -212,19 +193,73 @@ void initWifi()
 
 
 /**
+ * Function that adds the BLE devices to scan for
+ * 
+ */
+void addBLEDevices()
+{
+    int err_code;
+  
+    delay(100);
+    Serial.println("Adding device to scanlist ...");
+    err_code = ble.addDevice();
+    if (err_code != 0) {
+        Serial.println("Adding BLE device FAILED!");
+    }   
+}
+
+
+/**
+ * Function that sets BLE scanning parameters
+ */
+void setBLEScanParameters()
+{
+    int err_code;
+  
+    delay(100);
+    Serial.println("Setting BLE scan parameters...");
+    err_code = ble.setScanParameters();
+    if (err_code != 0) {
+        Serial.println("Setting BLE scan parameters FAILED!");
+    }    
+}
+
+
+/**
+ * Function that starts scanning for BLE devices
+ */
+void startBLEScan()
+{
+    int err_code;
+  
+    delay(100);
+    Serial.println("Starting BLE scan ...");
+    err_code = ble.startScan();
+    if (err_code != 0) {
+        Serial.println("Starting BLE scan FAILED!");
+    }    
+}
+
+
+/**
  * Function that handles incoming sensor data from the BLE-module
  * and passes it on to the cloud.
  */
 void handleBLEData() 
 {
-    char rx[50];
+    char rx[50] = { 0 };
     Serial1.setTimeout(1000);
     int len = Serial1.readBytesUntil('\n', rx, 50);
+    if (len > 1) {
+        rx[len-1] = '\0';
+        len--;
+    }
+    //Serial.println(rx[len-2]);
     if (len == 0) {
         // Timeout occured, ignore received data
     } else {
         // TODO: Investigate if anything needs to be done to CR at the end of the rx array
-        Serial.print(rx);
+        Serial.println(rx);
         // TODO: Send data or add to send buffer
     }
 }
