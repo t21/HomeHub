@@ -9,6 +9,8 @@
 //#define JOBB
 
 #include "WalnutCentral.h"
+#include "BleDevice.h"
+#include "ThingSpeak.h"
 
 #ifdef ARDUINO_SAMD_FEATHER_M0
     #include <Adafruit_WINC1500.h>
@@ -26,19 +28,21 @@
     Adafruit_WINC1500Client wifiClient;
     
     const int BLE_RST_PIN = 7;  // TODO: Check correct pin
-#else
-  #include <SPI.h>
-  #include <WiFi101.h>
+#elif defined ARDUINO_SAMD_MKR1000
+    #include <WiFi101.h>
 
-  // Initialize the Wifi client library
-  WiFiClient wifiClient;
+    // Initialize the Wifi client library
+    WiFiClient wifiClient;
   
-  const int BLE_RST_PIN = 7;
+    const int BLE_RST_PIN = 7;
+#else
+    #error "Board not recognized"
 #endif
 
+#define NBR_OF_BLE_DEVICES 10
 
 WalnutCentral ble;
-//int i = 0;
+BleDevice bleDeviceList[NBR_OF_BLE_DEVICES];
 
 #ifdef JOBB
     char ssid[] = "Sigma-PDA";      //  your network SSID (name)
@@ -65,22 +69,25 @@ const unsigned long BLINK_INTERVAL_MS = 1000;
 unsigned long lastBlinkTime;
 byte blinkLedStatus = 0;
 
-const unsigned long WIFI_CHECK_INTERVAL_MS = 10000;
+const unsigned long WIFI_CHECK_INTERVAL_MS = 30000;
 unsigned long lastWifiCheckTime;
 
 
 /**
  * Run once initialization
+ * 
  */
 void setup() 
 {
     initGPIO();
     initDebugUart();
     initWifi();
-    initBLE();
-    addBLEDevices();
-    setBLEScanParameters();
-    startBLEScan();
+    initThingspeak();
+    getBleDevices();
+    initBle();
+    addBleDevices();
+    setBleScanParameters();
+    startBleScan();
     lastBlinkTime = millis();
     lastWifiCheckTime = millis();
 }
@@ -93,7 +100,7 @@ void loop()
 {
     // Check if there is incoming data from BLE-module
     if (Serial1.available()) {
-        handleBLEData();
+        handleBleData();
     }
 
     // TODO: Check if there is incoming data from cloud?
@@ -139,11 +146,18 @@ void initDebugUart()
         ; // wait for serial port to connect. Needed for native USB
         delay(100);
     }
-    Serial.println("Booting up HomeHubNew ...");
+    Serial.println("Booting up HomeHub ...");
 }
 
 
-void initBLE() 
+void getBleDevices()
+{
+    bleDeviceList[0] = BleDevice(BD_OP_MODE_ADV,
+                                 0);
+}
+
+
+void initBle() 
 {
     int err_code;
   
@@ -192,11 +206,17 @@ void initWifi()
 }
 
 
+void initThingspeak()
+{
+    ThingSpeak.begin(wifiClient,"api.thingspeak.com", 80);
+}
+
+
 /**
  * Function that adds the BLE devices to scan for
  * 
  */
-void addBLEDevices()
+void addBleDevices()
 {
     int err_code;
   
@@ -212,7 +232,7 @@ void addBLEDevices()
 /**
  * Function that sets BLE scanning parameters
  */
-void setBLEScanParameters()
+void setBleScanParameters()
 {
     int err_code;
   
@@ -228,7 +248,7 @@ void setBLEScanParameters()
 /**
  * Function that starts scanning for BLE devices
  */
-void startBLEScan()
+void startBleScan()
 {
     int err_code;
   
@@ -245,21 +265,16 @@ void startBLEScan()
  * Function that handles incoming sensor data from the BLE-module
  * and passes it on to the cloud.
  */
-void handleBLEData() 
+void handleBleData() 
 {
-    char rx[50] = { 0 };
+    String rxStr;
+    
     Serial1.setTimeout(1000);
-    int len = Serial1.readBytesUntil('\n', rx, 50);
-    if (len > 1) {
-        rx[len-1] = '\0';
-        len--;
-    }
-    //Serial.println(rx[len-2]);
-    if (len == 0) {
+    rxStr = Serial1.readStringUntil('\n');
+    if (rxStr.length() == 0) {
         // Timeout occured, ignore received data
     } else {
-        // TODO: Investigate if anything needs to be done to CR at the end of the rx array
-        Serial.println(rx);
+        Serial.println(rxStr);
         // TODO: Send data or add to send buffer
     }
 }
