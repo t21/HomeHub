@@ -17,18 +17,41 @@ class BleDevice {
   public:
     BleDevice();
     BleDevice(ble_device_op_mode_t op_mode,
-              unsigned long thingSpeakChannelNumber);
-              
-//    int begin(Stream &serial, const int rstPin);
-//    int startScan();
-//    int stopScan();
-//    int setScanParameters();
-//    int addDevice();
+              unsigned long channelNumber,
+              String writeAPIKey,
+              unsigned int sensorIdField1,
+              unsigned int sensorIdField2,
+              unsigned int sensorIdField3,
+              unsigned int sensorIdField4,
+              unsigned int sensorIdField5,
+              unsigned int sensorIdField6,
+              unsigned int sensorIdField7,
+              unsigned int sensorIdField8
+              );
+
+    unsigned long getThingSpeakChannelNumber();
+    String getThingSpeakWriteAPIKey();
+    unsigned int getSensorIdField1();
+    unsigned int getSensorIdField2();
+    unsigned int getSensorIdField3();
+    unsigned int getSensorIdField4();
+    unsigned int getSensorIdField5();
+    unsigned int getSensorIdField6();
+    unsigned int getSensorIdField7();
+    unsigned int getSensorIdField8();
 
   private:
     ble_device_op_mode_t _op_mode;
-
-    unsigned long _thingSpeakChannelNumber;
+    unsigned long _channelNumber;
+    String _writeAPIKey;
+    unsigned int _sensorIdField1;
+    unsigned int _sensorIdField2;
+    unsigned int _sensorIdField3;
+    unsigned int _sensorIdField4;
+    unsigned int _sensorIdField5;
+    unsigned int _sensorIdField6;
+    unsigned int _sensorIdField7;
+    unsigned int _sensorIdField8;
       
 };
 

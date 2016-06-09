@@ -50,7 +50,7 @@
 #ifndef ThingSpeak_h
 #define ThingSpeak_h
 
-//#define PRINT_DEBUG_MESSAGES
+#define PRINT_DEBUG_MESSAGES
 //#define PRINT_HTTP
 
 #ifdef SPARK
@@ -1481,7 +1481,7 @@ private:
           //Photon doesn't have a dtostrf, but does have dtoa
           dtoa((double)value,5, valueString);
         #else
-// TODO		  dtostrf(value,1,5, valueString);
+		  dtostrf(value,1,5, valueString);
         #endif
 		return OK_SUCCESS;
 	};

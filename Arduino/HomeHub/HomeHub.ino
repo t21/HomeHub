@@ -10,9 +10,11 @@
 
 #include "WalnutCentral.h"
 #include "BleDevice.h"
+#include "BleAdvertisingParser.h"
 #include "ThingSpeak.h"
 
-#ifdef ARDUINO_SAMD_FEATHER_M0
+#if defined(ARDUINO_SAMD_FEATHER_M0)
+
     #include <Adafruit_WINC1500.h>
   
     // Define the WINC1500 board connections.
@@ -28,13 +30,16 @@
     Adafruit_WINC1500Client wifiClient;
     
     const int BLE_RST_PIN = 7;  // TODO: Check correct pin
-#elif defined ARDUINO_SAMD_MKR1000
+    
+#elif defined(ARDUINO_SAMD_MKR1000)
+
     #include <WiFi101.h>
 
     // Initialize the Wifi client library
     WiFiClient wifiClient;
   
     const int BLE_RST_PIN = 7;
+    
 #else
     #error "Board not recognized"
 #endif
@@ -55,13 +60,6 @@ BleDevice bleDeviceList[NBR_OF_BLE_DEVICES];
 int status = WL_IDLE_STATUS;
 
 
-// server address:
-// if you don't want to use DNS (and reduce your sketch size)
-// use the numeric IP instead of the name for the server:
-//IPAddress server(141,101,112,175);  // numeric IP for test page (no DNS)
-char server[] = "www.adafruit.com";    // domain name for test page (using DNS)
-#define webpage "/testwifi/index.html"  // path to test page
-
 unsigned long lastConnectionTime = 0;            // last time you connected to the server, in milliseconds
 const unsigned long postingInterval = 10L * 1000L; // delay between updates, in milliseconds
 
@@ -72,6 +70,9 @@ byte blinkLedStatus = 0;
 const unsigned long WIFI_CHECK_INTERVAL_MS = 30000;
 unsigned long lastWifiCheckTime;
 
+const unsigned long THINGSPEAK_TEST_INTERVAL_MS = 60000;
+unsigned long lastThingSpeakTestTime;
+int thingSpeakTestCounter = 0;
 
 /**
  * Run once initialization
@@ -83,13 +84,14 @@ void setup()
     initDebugUart();
     initWifi();
     initThingspeak();
-    getBleDevices();
+    setupBleDevices();
     initBle();
     addBleDevices();
     setBleScanParameters();
     startBleScan();
     lastBlinkTime = millis();
     lastWifiCheckTime = millis();
+    lastThingSpeakTestTime = millis();
 }
 
 
@@ -117,6 +119,24 @@ void loop()
         printWifiStatus();
         lastWifiCheckTime = millis();
     }    
+
+    // Testing ThingSpeak API
+//    if ((millis() - lastThingSpeakTestTime) > THINGSPEAK_TEST_INTERVAL_MS) {
+//        //printWifiStatus();
+//        ThingSpeak.setField(1, thingSpeakTestCounter);
+//        Serial.print("ThingSpeak channel number: ");
+//        Serial.println(bleDeviceList[0].getThingSpeakChannelNumber());
+//        Serial.print("ThingSpeak write API key: ");
+//        Serial.println(bleDeviceList[0].getThingSpeakWriteAPIKey());
+//        String t = bleDeviceList[0].getThingSpeakWriteAPIKey();
+//        char t2[50];
+//        t.toCharArray(t2, 50);
+//        // TODO: Add writeFields function with String
+//        //ThingSpeak.writeFields(bleDeviceList[0].getThingSpeakChannelNumber(), bleDeviceList[0].getThingSpeakWriteAPIKey());
+//        ThingSpeak.writeFields(bleDeviceList[0].getThingSpeakChannelNumber(), t2);
+//        lastThingSpeakTestTime = millis();
+//        thingSpeakTestCounter++;
+//    }    
 }
 
 
@@ -150,10 +170,13 @@ void initDebugUart()
 }
 
 
-void getBleDevices()
+void setupBleDevices()
 {
-    bleDeviceList[0] = BleDevice(BD_OP_MODE_ADV,
-                                 0);
+    bleDeviceList[0] = BleDevice(BD_OP_MODE_ADV,            // BLE operating mode
+                                 123470,                    // ThingSpeak channel number
+                                 "0TLG1W8504G1IODA",        // ThingSpeak write API Key
+                                 SENSOR_ID_TEMPERATURE, SENSOR_ID_HUMIDITY, 0, 0, 0, 0, 0, 0     // SensorId <-> ThingSpeak Field # mapping
+                                 );
 }
 
 
@@ -167,7 +190,7 @@ void initBle()
     delay(100);
     err_code = ble.begin(Serial1, BLE_RST_PIN);
     if (err_code != 0) {
-        Serial.println("BLE-module initialization FAILED! Halting ...");
+        Serial.println("BLE-module initialization FAILED! Halting execution ...");
         //exit(0);
     }
 }
@@ -184,7 +207,7 @@ void initWifi()
     
     // check for the presence of the shield:
     if (WiFi.status() == WL_NO_SHIELD) {
-        Serial.println("WiFi shield not present");
+        Serial.println("WiFi shield not present, halting execution");
         // don't continue:
         exit(0);
     }
@@ -271,39 +294,102 @@ void handleBleData()
     
     Serial1.setTimeout(1000);
     rxStr = Serial1.readStringUntil('\n');
+    rxStr.trim();
     if (rxStr.length() == 0) {
         // Timeout occured, ignore received data
     } else {
         Serial.println(rxStr);
         // TODO: Send data or add to send buffer
+//        Serial.print("Received string length: ");
+//        Serial.println(rxStr.length());
+//        Serial.print("Sensor data number of bytes: ");
+//        Serial.println(rxStr[0]);
+        // TODO: Get device index from rxStr
+        int device_index = ((rxStr[4] - '0') * 10) + (rxStr[5] - '0');
+
+        boolean sensorValuesUpdated = false;
+        
+        unsigned int sensorId = bleDeviceList[device_index].getSensorIdField1();
+        Serial.print("SensorId:"); Serial.println(sensorId);
+        if (sensorId != SENSOR_ID_NONE) {
+            float sensorValue = BleAdvertisingParser::getSensorValue(rxStr, bleDeviceList[device_index].getSensorIdField1());
+            Serial.print("SensorValue:"); Serial.println(sensorValue);
+            ThingSpeak.setField(1, sensorValue);
+            sensorValuesUpdated = true;
+        }
+        
+        sensorId = bleDeviceList[device_index].getSensorIdField2();
+        Serial.print("SensorId:"); Serial.println(sensorId);
+        if (sensorId != SENSOR_ID_NONE) {
+            float sensorValue = BleAdvertisingParser::getSensorValue(rxStr, bleDeviceList[device_index].getSensorIdField2());
+            Serial.print("SensorValue:"); Serial.println(sensorValue);
+            ThingSpeak.setField(2, sensorValue);
+            sensorValuesUpdated = true;
+        }
+        
+        sensorId = bleDeviceList[device_index].getSensorIdField3();
+        Serial.print("SensorId:"); Serial.println(sensorId);
+        if (sensorId != SENSOR_ID_NONE) {
+            float sensorValue = BleAdvertisingParser::getSensorValue(rxStr, bleDeviceList[device_index].getSensorIdField3());
+            Serial.print("SensorValue:"); Serial.println(sensorValue);
+            ThingSpeak.setField(3, sensorValue);
+            sensorValuesUpdated = true;
+        }
+        
+        sensorId = bleDeviceList[device_index].getSensorIdField4();
+        Serial.print("SensorId:"); Serial.println(sensorId);
+        if (sensorId != SENSOR_ID_NONE) {
+            float sensorValue = BleAdvertisingParser::getSensorValue(rxStr, bleDeviceList[device_index].getSensorIdField4());
+            Serial.print("SensorValue:"); Serial.println(sensorValue);
+            ThingSpeak.setField(4, sensorValue);
+            sensorValuesUpdated = true;
+        }
+        
+        sensorId = bleDeviceList[device_index].getSensorIdField5();
+        Serial.print("SensorId:"); Serial.println(sensorId);
+        if (sensorId != SENSOR_ID_NONE) {
+            float sensorValue = BleAdvertisingParser::getSensorValue(rxStr, bleDeviceList[device_index].getSensorIdField5());
+            Serial.print("SensorValue:"); Serial.println(sensorValue);
+            ThingSpeak.setField(5, sensorValue);
+            sensorValuesUpdated = true;
+        }
+        
+        sensorId = bleDeviceList[device_index].getSensorIdField6();
+        Serial.print("SensorId:"); Serial.println(sensorId);
+        if (sensorId != SENSOR_ID_NONE) {
+            float sensorValue = BleAdvertisingParser::getSensorValue(rxStr, bleDeviceList[device_index].getSensorIdField6());
+            Serial.print("SensorValue:"); Serial.println(sensorValue);
+            ThingSpeak.setField(6, sensorValue);
+            sensorValuesUpdated = true;
+        }
+        
+        sensorId = bleDeviceList[device_index].getSensorIdField7();
+        Serial.print("SensorId:"); Serial.println(sensorId);
+        if (sensorId != SENSOR_ID_NONE) {
+            float sensorValue = BleAdvertisingParser::getSensorValue(rxStr, bleDeviceList[device_index].getSensorIdField7());
+            Serial.print("SensorValue:"); Serial.println(sensorValue);
+            ThingSpeak.setField(7, sensorValue);
+            sensorValuesUpdated = true;
+        }
+        
+        sensorId = bleDeviceList[device_index].getSensorIdField8();
+        Serial.print("SensorId:"); Serial.println(sensorId);
+        if (sensorId != SENSOR_ID_NONE) {
+            float sensorValue = BleAdvertisingParser::getSensorValue(rxStr, bleDeviceList[device_index].getSensorIdField8());
+            Serial.print("SensorValue:"); Serial.println(sensorValue);
+            ThingSpeak.setField(8, sensorValue);
+            sensorValuesUpdated = true;
+        }
+
+        if ((sensorValuesUpdated) && ((millis() - lastThingSpeakTestTime) > THINGSPEAK_TEST_INTERVAL_MS)) {
+            Serial.println("Updating");
+            String t = bleDeviceList[0].getThingSpeakWriteAPIKey();
+            char t2[50];
+            t.toCharArray(t2, 50);
+            ThingSpeak.writeFields(bleDeviceList[0].getThingSpeakChannelNumber(), t2);
+            lastThingSpeakTestTime = millis();
+        }
     }
-}
-
-
-// this method makes a HTTP connection to the server:
-void httpRequest() {
-  // close any connection before send a new request.
-  // This will free the socket on the WiFi shield
-  wifiClient.stop();
-
-  // if there's a successful connection:
-  if (wifiClient.connect(server, 80)) {
-    Serial.println("connecting...");
-    // Make a HTTP request:
-    wifiClient.print("GET ");
-    wifiClient.print(webpage);
-    wifiClient.println(" HTTP/1.1");
-    wifiClient.print("Host: "); wifiClient.println(server);
-    wifiClient.println("Connection: close");
-    wifiClient.println();
-
-    // note the time that the connection was made:
-    lastConnectionTime = millis();
-  }
-  else {
-    // if you couldn't make a connection:
-    Serial.println("connection failed");
-  }
 }
 
 
