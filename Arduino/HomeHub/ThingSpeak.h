@@ -1480,8 +1480,11 @@ private:
         #ifdef PARTICLE_PHOTONELECTRON
           //Photon doesn't have a dtostrf, but does have dtoa
           dtoa((double)value,5, valueString);
+        #elif defined(ARDUINO_ARCH_SAMD)
+          //dtostrf(value,1,5, valueString);
+          sprintf(valueString, "%.5f", value);
         #else
-		  dtostrf(value,1,5, valueString);
+		      dtostrf(value,1,5, valueString);
         #endif
 		return OK_SUCCESS;
 	};
