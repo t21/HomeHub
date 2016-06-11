@@ -225,7 +225,8 @@ void initThingspeak()
 
 void setupBleDevices()
 {
-    bleDeviceList[0] = BleDevice(BD_OP_MODE_ADV,            // BLE operating mode
+    bleDeviceList[0] = BleDevice(BluetoothDeviceAddress(0xD5,0xA9,0xE3,0xC1,0x1B,0xA4),
+                                 BD_OP_MODE_ADV,            // BLE operating mode
                                  123470,                    // ThingSpeak channel number
                                  "0TLG1W8504G1IODA",        // ThingSpeak write API Key
                                  SENSOR_ID_TEMPERATURE, SENSOR_ID_HUMIDITY, SENSOR_ID_AMBIENT_LIGHT, SENSOR_ID_PIR, 0, 0, 0, 0     // SensorId <-> ThingSpeak Field # mapping
@@ -259,7 +260,7 @@ void addBleDevices()
   
     delay(100);
     Serial.println("Adding device to scanlist ...");
-    err_code = ble.addDevice();
+    err_code = ble.addDevice(bleDeviceList[0].getBluetoothDeviceAddress());
     if (err_code != 0) {
         Serial.println("Adding BLE device FAILED!");
     }   

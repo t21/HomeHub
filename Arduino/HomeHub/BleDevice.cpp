@@ -6,7 +6,8 @@ BleDevice::BleDevice() {
   
 }
 
-BleDevice::BleDevice(ble_device_op_mode_t op_mode,
+BleDevice::BleDevice(BluetoothDeviceAddress bluetoothDeviceAddress,
+                    ble_device_op_mode_t op_mode,
                     unsigned long channelNumber,
                     String writeAPIKey,
                     unsigned int sensorIdField1,
@@ -17,7 +18,9 @@ BleDevice::BleDevice(ble_device_op_mode_t op_mode,
                     unsigned int sensorIdField6,
                     unsigned int sensorIdField7,
                     unsigned int sensorIdField8
-                    ) {
+                    ) 
+{
+    _bluetoothDeviceAddress = bluetoothDeviceAddress;
     _channelNumber = channelNumber;  
     _writeAPIKey = writeAPIKey;
     _sensorIdField1 = sensorIdField1;
@@ -69,5 +72,11 @@ unsigned int BleDevice::getSensorIdField7() {
 
 unsigned int BleDevice::getSensorIdField8() {
     return _sensorIdField8;
+}
+
+
+BluetoothDeviceAddress BleDevice::getBluetoothDeviceAddress()
+{
+    return _bluetoothDeviceAddress;
 }
 

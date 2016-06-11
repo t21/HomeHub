@@ -3,6 +3,7 @@
 #define BleDevice_h
 
 #include "Arduino.h"
+#include "BluetoothDeviceAddress.h"
 
 typedef enum {
     BD_OP_MODE_NONE,
@@ -16,7 +17,8 @@ class BleDevice {
   
   public:
     BleDevice();
-    BleDevice(ble_device_op_mode_t op_mode,
+    BleDevice(BluetoothDeviceAddress bleAddress,
+              ble_device_op_mode_t op_mode,
               unsigned long channelNumber,
               String writeAPIKey,
               unsigned int sensorIdField1,
@@ -39,8 +41,10 @@ class BleDevice {
     unsigned int getSensorIdField6();
     unsigned int getSensorIdField7();
     unsigned int getSensorIdField8();
+    BluetoothDeviceAddress getBluetoothDeviceAddress();
 
   private:
+    BluetoothDeviceAddress _bluetoothDeviceAddress;
     ble_device_op_mode_t _op_mode;
     unsigned long _channelNumber;
     String _writeAPIKey;

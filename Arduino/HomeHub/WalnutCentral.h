@@ -3,6 +3,7 @@
 #define WalnutCentral_h
 
 #include "Arduino.h"
+#include "BluetoothDeviceAddress.h"
 
 class WalnutCentral {
   
@@ -12,7 +13,7 @@ class WalnutCentral {
     int startScan();
     int stopScan();
     int setScanParameters();
-    int addDevice();
+    int addDevice(BluetoothDeviceAddress address);
 
   private:
     Stream* _serial;
