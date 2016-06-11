@@ -119,24 +119,6 @@ void loop()
         printWifiConnectionStatus();
         lastWifiCheckTime = millis();
     }    
-
-    // Testing ThingSpeak API
-//    if ((millis() - lastThingSpeakTestTime) > THINGSPEAK_TEST_INTERVAL_MS) {
-//        //printWifiStatus();
-//        ThingSpeak.setField(1, thingSpeakTestCounter);
-//        Serial.print("ThingSpeak channel number: ");
-//        Serial.println(bleDeviceList[0].getThingSpeakChannelNumber());
-//        Serial.print("ThingSpeak write API key: ");
-//        Serial.println(bleDeviceList[0].getThingSpeakWriteAPIKey());
-//        String t = bleDeviceList[0].getThingSpeakWriteAPIKey();
-//        char t2[50];
-//        t.toCharArray(t2, 50);
-//        // TODO: Add writeFields function with String
-//        //ThingSpeak.writeFields(bleDeviceList[0].getThingSpeakChannelNumber(), bleDeviceList[0].getThingSpeakWriteAPIKey());
-//        ThingSpeak.writeFields(bleDeviceList[0].getThingSpeakChannelNumber(), t2);
-//        lastThingSpeakTestTime = millis();
-//        thingSpeakTestCounter++;
-//    }    
 }
 
 
@@ -231,6 +213,12 @@ void setupBleDevices()
                                  "0TLG1W8504G1IODA",        // ThingSpeak write API Key
                                  SENSOR_ID_TEMPERATURE, SENSOR_ID_HUMIDITY, SENSOR_ID_AMBIENT_LIGHT, SENSOR_ID_PIR, 0, 0, 0, 0     // SensorId <-> ThingSpeak Field # mapping
                                  );
+    bleDeviceList[1] = BleDevice(BluetoothDeviceAddress(0xD8,0xB4,0xDA,0x9E,0x72,0x9D),
+                                 BD_OP_MODE_ADV,            // BLE operating mode
+                                 123989,                    // ThingSpeak channel number
+                                 "6YEZIFV5NCUHOS6B",        // ThingSpeak write API Key
+                                 SENSOR_ID_TEMPERATURE, SENSOR_ID_HUMIDITY, SENSOR_ID_AMBIENT_LIGHT, 0, 0, 0, 0, 0     // SensorId <-> ThingSpeak Field # mapping
+                                 );
 }
 
 
@@ -261,6 +249,13 @@ void addBleDevices()
     delay(100);
     Serial.println("Adding device to scanlist ...");
     err_code = ble.addDevice(bleDeviceList[0].getBluetoothDeviceAddress());
+    if (err_code != 0) {
+        Serial.println("Adding BLE device FAILED!");
+    }   
+
+    delay(5000);
+    Serial.println("Adding device to scanlist ...");
+    err_code = ble.addDevice(bleDeviceList[1].getBluetoothDeviceAddress());
     if (err_code != 0) {
         Serial.println("Adding BLE device FAILED!");
     }   
@@ -419,10 +414,10 @@ void handleBleData()
             #ifdef PRINT_DEBUG_MESSAGES
                 Serial.println("Updating");
             #endif
-            String t = bleDeviceList[0].getThingSpeakWriteAPIKey();
+            String t = bleDeviceList[device_index].getThingSpeakWriteAPIKey();
             char t2[50];
             t.toCharArray(t2, 50);
-            ThingSpeak.writeFields(bleDeviceList[0].getThingSpeakChannelNumber(), t2);
+            ThingSpeak.writeFields(bleDeviceList[device_index].getThingSpeakChannelNumber(), t2);
             lastThingSpeakTestTime = millis();
         }
     }

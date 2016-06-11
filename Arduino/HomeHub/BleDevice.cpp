@@ -1,6 +1,6 @@
 #include "BleDevice.h"
 
-#define ENABLE_DEBUG_PRINT
+#define PRINT_DEBUG_MESSAGES
 
 BleDevice::BleDevice() {
   
