@@ -20,7 +20,8 @@ class BleAdvertisingParser {
   
   public:
     BleAdvertisingParser();
-    static float getSensorValue(String str, unsigned int sensorId);
+//    static float getSensorValue(String str, unsigned int sensorId);
+    static float getSensorValue(char *str, uint8_t strLen, unsigned int sensorId);
     static boolean isValidSensorId(unsigned int sensorId);
 
   private:

@@ -10,7 +10,7 @@
 #include "BleAdvertisingParser.h"
 #include "ThingSpeak.h"
 
-#define PRINT_DEBUG_MESSAGES
+//#define PRINT_DEBUG_MESSAGES
 //#define JOBB
 
 #if defined(ARDUINO_SAMD_FEATHER_M0)
@@ -116,7 +116,7 @@ void loop()
 
     // Check Wifi-status
     if ((millis() - lastWifiCheckTime) > WIFI_CHECK_INTERVAL_MS) {
-        printWifiConnectionStatus();
+//        printWifiConnectionStatus();
         lastWifiCheckTime = millis();
     }    
 }
@@ -221,19 +221,19 @@ void setupBleDevices()
                                  0                              // Sensor ID for ThingSpeak Field #8
                                  );
                                  
-//    bleDeviceList[1] = BleDevice(BluetoothDeviceAddress(0xD8,0xB4,0xDA,0x9E,0x72,0x9D),
-//                                 BD_OP_MODE_ADV,            // BLE operating mode
-//                                 123989,                    // ThingSpeak channel number
-//                                 "6YEZIFV5NCUHOS6B",        // ThingSpeak write API Key
-//                                 SENSOR_ID_TEMPERATURE,
-//                                 SENSOR_ID_HUMIDITY,
-//                                 SENSOR_ID_AMBIENT_LIGHT,
-//                                 SENSOR_ID_BAROMETRIC_PRESSURE,
-//                                 SENSOR_ID_CO2,
-//                                 0,
-//                                 SENSOR_ID_BATTERY_CAPACITY,
-//                                 0     // SensorId <-> ThingSpeak Field # mapping
-//                                 );
+    bleDeviceList[1] = BleDevice(BluetoothDeviceAddress(0xD8,0xB4,0xDA,0x9E,0x72,0x9D),
+                                 BD_OP_MODE_ADV,            // BLE operating mode
+                                 123989,                    // ThingSpeak channel number
+                                 "6YEZIFV5NCUHOS6B",        // ThingSpeak write API Key
+                                 SENSOR_ID_TEMPERATURE,
+                                 SENSOR_ID_HUMIDITY,
+                                 SENSOR_ID_AMBIENT_LIGHT,
+                                 SENSOR_ID_BAROMETRIC_PRESSURE,
+                                 SENSOR_ID_CO2,
+                                 0,
+                                 SENSOR_ID_BATTERY_CAPACITY,
+                                 0     // SensorId <-> ThingSpeak Field # mapping
+                                 );
 }
 
 
@@ -315,20 +315,47 @@ void startBleScan()
  */
 void handleBleData() 
 {
-    String rxStr;
-    
-    Serial1.setTimeout(2000);
-    rxStr = Serial1.readStringUntil('\n');
-    Serial.print("rxStr length:"); Serial.println(rxStr.length());
-    Serial.println(rxStr);
-    rxStr.trim();
-    if (rxStr.length() == 0) {
-        // Timeout occured, ignore received data
-    } else {
+//    String rxStr;
+    char rx[150] = {0};
+    uint8_t i = 0;
+    uint8_t rxLen;
+    unsigned long startTime = millis();
+    boolean timedOut = false;
+
+    rx[i] = Serial1.read();
+    while (rx[i] != '\n') {
+        if (Serial1.available()) {
+            rx[++i] = Serial1.read();
+        }
+        if (millis() - startTime > 2000) {
+            timedOut = true;
+            break;
+        }
+    }
+    rx[i-1] = 0;
+    rxLen = i;
+    Serial.println(rx);
+    //Serial.println(rxLen);
+
+
+//    return;
+
+
+//    delay(10);
+//    Serial1.setTimeout(5000);
+//    rxStr = Serial1.readStringUntil('\n');
+//    Serial.print("rxStr length:"); Serial.println(rxStr.length());
+//    Serial.println(rxStr);
+//    rxStr.trim();
+//    if (rxStr.length() == 0) {
+//        // Timeout occured, ignore received data
+//    } else {
+    if (!timedOut) {
 //        #ifdef PRINT_DEBUG_MESSAGES
-            Serial.println(rxStr);
+//            Serial.println(rxStr);
 //        #endif
-        int device_index = ((rxStr[5] - '0') * 10) + (rxStr[6] - '0');
+//        int device_index = ((rxStr[5] - '0') * 10) + (rxStr[6] - '0');
+        int device_index = ((rx[5] - '0') * 10) + (rx[6] - '0');
         #ifdef PRINT_DEBUG_MESSAGES
             Serial.print("Device index:"); Serial.println(device_index);
         #endif
@@ -338,12 +365,18 @@ void handleBleData()
         }
 
         boolean sensorValuesUpdated = false;
+
+        int advDataLen = ((rx[8] - '0') * 10) + (rx[9] - '0');
+        Serial.println(advDataLen);
+        if (rxLen != (11 + 59 + 8 + advDataLen)) {
+            Serial.println("Advertising data length not correct");
+        }
         
         unsigned int sensorId;
         for (int i = 1; i < 9; i++) {
             sensorId = bleDeviceList[device_index].getSensorIdField(i);
             if (BleAdvertisingParser::isValidSensorId(sensorId)) {
-                float sensorValue = BleAdvertisingParser::getSensorValue(rxStr, sensorId);
+                float sensorValue = BleAdvertisingParser::getSensorValue(rx, rxLen, sensorId);
                 ThingSpeak.setField(i, sensorValue);
                 sensorValuesUpdated = true;
                 #ifdef PRINT_DEBUG_MESSAGES
@@ -355,7 +388,7 @@ void handleBleData()
         
         if (sensorValuesUpdated) {
             #ifdef PRINT_DEBUG_MESSAGES
-                Serial.println("Updating");
+                Serial.println("Sending to ThingSpeak ...");
             #endif
             String t = bleDeviceList[device_index].getThingSpeakWriteAPIKey();
             char t2[50];

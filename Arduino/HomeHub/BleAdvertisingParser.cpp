@@ -7,7 +7,8 @@ BleAdvertisingParser::BleAdvertisingParser() {
 }
 
 
-float BleAdvertisingParser::getSensorValue(String str, unsigned int sensorId) {
+//float BleAdvertisingParser::getSensorValue(String str, unsigned int sensorId) {
+float BleAdvertisingParser::getSensorValue(char *str, uint8_t strLen, unsigned int sensorId) {
     uint8_t advData[62] = {0};
     uint8_t advDataLen;
     
@@ -24,7 +25,8 @@ float BleAdvertisingParser::getSensorValue(String str, unsigned int sensorId) {
 
         // Convert string to uint8_t array
         unsigned int index = 0;
-        for (int i = offset; i < str.length(); i+=2) {
+//        for (int i = offset; i < str.length(); i+=2) {
+        for (int i = offset; i < strLen; i+=2) {
             #ifdef PRINT_DEBUG_MESSAGES
                 Serial.print(str[i]);
                 Serial.print(str[i+1]);
