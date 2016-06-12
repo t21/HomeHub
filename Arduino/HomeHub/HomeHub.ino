@@ -10,7 +10,7 @@
 #include "BleAdvertisingParser.h"
 #include "ThingSpeak.h"
 
-//#define PRINT_DEBUG_MESSAGES
+#define PRINT_DEBUG_MESSAGES
 //#define JOBB
 
 #if defined(ARDUINO_SAMD_FEATHER_M0)
@@ -208,17 +208,32 @@ void initThingspeak()
 void setupBleDevices()
 {
     bleDeviceList[0] = BleDevice(BluetoothDeviceAddress(0xD5,0xA9,0xE3,0xC1,0x1B,0xA4),
-                                 BD_OP_MODE_ADV,            // BLE operating mode
-                                 123470,                    // ThingSpeak channel number
-                                 "0TLG1W8504G1IODA",        // ThingSpeak write API Key
-                                 SENSOR_ID_TEMPERATURE, SENSOR_ID_HUMIDITY, SENSOR_ID_AMBIENT_LIGHT, SENSOR_ID_PIR, 0, 0, 0, 0     // SensorId <-> ThingSpeak Field # mapping
+                                 BD_OP_MODE_ADV,                // BLE operating mode
+                                 123470,                        // ThingSpeak channel number
+                                 "0TLG1W8504G1IODA",            // ThingSpeak write API Key
+                                 SENSOR_ID_TEMPERATURE,         // Sensor ID for ThingSpeak Field #1
+                                 SENSOR_ID_HUMIDITY,            // Sensor ID for ThingSpeak Field #2
+                                 SENSOR_ID_AMBIENT_LIGHT,       // Sensor ID for ThingSpeak Field #3
+                                 SENSOR_ID_PIR,                 // Sensor ID for ThingSpeak Field #4
+                                 0,                             // Sensor ID for ThingSpeak Field #5
+                                 0,                             // Sensor ID for ThingSpeak Field #6
+                                 SENSOR_ID_BATTERY_CAPACITY,    // Sensor ID for ThingSpeak Field #7
+                                 0                              // Sensor ID for ThingSpeak Field #8
                                  );
-    bleDeviceList[1] = BleDevice(BluetoothDeviceAddress(0xD8,0xB4,0xDA,0x9E,0x72,0x9D),
-                                 BD_OP_MODE_ADV,            // BLE operating mode
-                                 123989,                    // ThingSpeak channel number
-                                 "6YEZIFV5NCUHOS6B",        // ThingSpeak write API Key
-                                 SENSOR_ID_TEMPERATURE, SENSOR_ID_HUMIDITY, SENSOR_ID_AMBIENT_LIGHT, 0, 0, 0, 0, 0     // SensorId <-> ThingSpeak Field # mapping
-                                 );
+                                 
+//    bleDeviceList[1] = BleDevice(BluetoothDeviceAddress(0xD8,0xB4,0xDA,0x9E,0x72,0x9D),
+//                                 BD_OP_MODE_ADV,            // BLE operating mode
+//                                 123989,                    // ThingSpeak channel number
+//                                 "6YEZIFV5NCUHOS6B",        // ThingSpeak write API Key
+//                                 SENSOR_ID_TEMPERATURE,
+//                                 SENSOR_ID_HUMIDITY,
+//                                 SENSOR_ID_AMBIENT_LIGHT,
+//                                 SENSOR_ID_BAROMETRIC_PRESSURE,
+//                                 SENSOR_ID_CO2,
+//                                 0,
+//                                 SENSOR_ID_BATTERY_CAPACITY,
+//                                 0     // SensorId <-> ThingSpeak Field # mapping
+//                                 );
 }
 
 
@@ -253,7 +268,7 @@ void addBleDevices()
         Serial.println("Adding BLE device FAILED!");
     }   
 
-    delay(5000);
+    delay(100);
     Serial.println("Adding device to scanlist ...");
     err_code = ble.addDevice(bleDeviceList[1].getBluetoothDeviceAddress());
     if (err_code != 0) {
@@ -304,6 +319,8 @@ void handleBleData()
     
     Serial1.setTimeout(2000);
     rxStr = Serial1.readStringUntil('\n');
+    Serial.print("rxStr length:"); Serial.println(rxStr.length());
+    Serial.println(rxStr);
     rxStr.trim();
     if (rxStr.length() == 0) {
         // Timeout occured, ignore received data
@@ -322,94 +339,20 @@ void handleBleData()
 
         boolean sensorValuesUpdated = false;
         
-        unsigned int sensorId = bleDeviceList[device_index].getSensorIdField1();
-        if (BleAdvertisingParser::isValidSensorId(sensorId)) {
-            float sensorValue = BleAdvertisingParser::getSensorValue(rxStr, sensorId);
-            ThingSpeak.setField(1, sensorValue);
-            sensorValuesUpdated = true;
-            #ifdef PRINT_DEBUG_MESSAGES
-                Serial.print("SensorId:"); Serial.println(sensorId);
-                Serial.print("SensorValue:"); Serial.println(sensorValue);
-            #endif
+        unsigned int sensorId;
+        for (int i = 1; i < 9; i++) {
+            sensorId = bleDeviceList[device_index].getSensorIdField(i);
+            if (BleAdvertisingParser::isValidSensorId(sensorId)) {
+                float sensorValue = BleAdvertisingParser::getSensorValue(rxStr, sensorId);
+                ThingSpeak.setField(i, sensorValue);
+                sensorValuesUpdated = true;
+                #ifdef PRINT_DEBUG_MESSAGES
+                    Serial.print("SensorId:"); Serial.println(sensorId);
+                    Serial.print("SensorValue:"); Serial.println(sensorValue);
+                #endif
+            }
         }
         
-        sensorId = bleDeviceList[device_index].getSensorIdField2();
-        if (BleAdvertisingParser::isValidSensorId(sensorId)) {
-            float sensorValue = BleAdvertisingParser::getSensorValue(rxStr, sensorId);
-            ThingSpeak.setField(2, sensorValue);
-            sensorValuesUpdated = true;
-            #ifdef PRINT_DEBUG_MESSAGES
-                Serial.print("SensorId:"); Serial.println(sensorId);
-                Serial.print("SensorValue:"); Serial.println(sensorValue);
-            #endif
-        }
-        
-        sensorId = bleDeviceList[device_index].getSensorIdField3();
-        if (BleAdvertisingParser::isValidSensorId(sensorId)) {
-            float sensorValue = BleAdvertisingParser::getSensorValue(rxStr, sensorId);
-            ThingSpeak.setField(3, sensorValue);
-            sensorValuesUpdated = true;
-            #ifdef PRINT_DEBUG_MESSAGES
-                Serial.print("SensorId:"); Serial.println(sensorId);
-                Serial.print("SensorValue:"); Serial.println(sensorValue);
-            #endif
-        }
-        
-        sensorId = bleDeviceList[device_index].getSensorIdField4();
-        if (BleAdvertisingParser::isValidSensorId(sensorId)) {
-            float sensorValue = BleAdvertisingParser::getSensorValue(rxStr, sensorId);
-            ThingSpeak.setField(4, sensorValue);
-            sensorValuesUpdated = true;
-            #ifdef PRINT_DEBUG_MESSAGES
-                Serial.print("SensorId:"); Serial.println(sensorId);
-                Serial.print("SensorValue:"); Serial.println(sensorValue);
-            #endif
-        }
-        
-        sensorId = bleDeviceList[device_index].getSensorIdField5();
-        if (BleAdvertisingParser::isValidSensorId(sensorId)) {
-            float sensorValue = BleAdvertisingParser::getSensorValue(rxStr, sensorId);
-            ThingSpeak.setField(5, sensorValue);
-            sensorValuesUpdated = true;
-            #ifdef PRINT_DEBUG_MESSAGES
-                Serial.print("SensorId:"); Serial.println(sensorId);
-                Serial.print("SensorValue:"); Serial.println(sensorValue);
-            #endif
-        }
-        
-        sensorId = bleDeviceList[device_index].getSensorIdField6();
-        if (BleAdvertisingParser::isValidSensorId(sensorId)) {
-            float sensorValue = BleAdvertisingParser::getSensorValue(rxStr, sensorId);
-            ThingSpeak.setField(6, sensorValue);
-            sensorValuesUpdated = true;
-            #ifdef PRINT_DEBUG_MESSAGES
-                Serial.print("SensorId:"); Serial.println(sensorId);
-                Serial.print("SensorValue:"); Serial.println(sensorValue);
-            #endif
-        }
-        
-        sensorId = bleDeviceList[device_index].getSensorIdField7();
-        if (BleAdvertisingParser::isValidSensorId(sensorId)) {
-            float sensorValue = BleAdvertisingParser::getSensorValue(rxStr, sensorId);
-            ThingSpeak.setField(7, sensorValue);
-            sensorValuesUpdated = true;
-            #ifdef PRINT_DEBUG_MESSAGES
-                Serial.print("SensorId:"); Serial.println(sensorId);
-                Serial.print("SensorValue:"); Serial.println(sensorValue);
-            #endif
-        }
-        
-        sensorId = bleDeviceList[device_index].getSensorIdField8();
-        if (BleAdvertisingParser::isValidSensorId(sensorId)) {
-            float sensorValue = BleAdvertisingParser::getSensorValue(rxStr, sensorId);
-            ThingSpeak.setField(8, sensorValue);
-            sensorValuesUpdated = true;
-            #ifdef PRINT_DEBUG_MESSAGES
-                Serial.print("SensorId:"); Serial.println(sensorId);
-                Serial.print("SensorValue:"); Serial.println(sensorValue);
-            #endif
-        }
-
         if (sensorValuesUpdated) {
             #ifdef PRINT_DEBUG_MESSAGES
                 Serial.println("Updating");

@@ -46,6 +46,17 @@ float BleAdvertisingParser::getSensorValue(String str, unsigned int sensorId) {
                 Serial.print("field length:"); Serial.print(fieldLength); Serial.print(" field type:"); Serial.println(fieldType);
             #endif
 
+            if (fieldType == 0x16) {
+                uint8_t k = index + 2;
+                uint16_t uuid = (advData[k+1] << 8) | advData[k];
+                if ((uuid == 0x180F) && (sensorId == SENSOR_ID_BATTERY_CAPACITY)) {
+                    #ifdef PRINT_DEBUG_MESSAGES
+                        Serial.print("Battery:"); Serial.print(advData[k+2]); Serial.println("%");
+                    #endif
+                    return advData[k+2];
+                }
+            }
+
             if (fieldType == 0xFF) {
                 #ifdef PRINT_DEBUG_MESSAGES
                     Serial.println("Manufacturer data found");
@@ -103,9 +114,31 @@ float BleAdvertisingParser::getSensorValue(String str, unsigned int sensorId) {
                             }
                             break;
                     
+                        case SENSOR_ID_BAROMETRIC_PRESSURE:
+                            sVal = (uint16_t)((advData[k++] << 8) | advData[k++]);
+                            if (sId == sensorId) {
+                                #ifdef PRINT_DEBUG_MESSAGES
+                                    Serial.print("Sensor id:"); Serial.println(sId);
+                                    Serial.print("Sensor value:"); Serial.println(sVal);
+                                #endif
+                                return sVal;
+                            }
+                            break;
+                    
+                        case SENSOR_ID_CO2:
+                            sVal = (uint16_t)((advData[k++] << 8) | advData[k++]);
+                            if (sId == sensorId) {
+                                #ifdef PRINT_DEBUG_MESSAGES
+                                    Serial.print("Sensor id:"); Serial.println(sId);
+                                    Serial.print("Sensor value:"); Serial.println(sVal);
+                                #endif
+                                return sVal;
+                            }
+                            break;
+                    
                         default:
                             // Sensor Id unknown
-                            return -1;
+                            return 0;
                     }
                 }
             }
@@ -118,19 +151,25 @@ float BleAdvertisingParser::getSensorValue(String str, unsigned int sensorId) {
 
 
 boolean BleAdvertisingParser::isValidSensorId(unsigned int sensorId) {
-    boolean valid = false;
+//    boolean valid = false;
+//
+//    switch(sensorId) {
+//        case SENSOR_ID_NONE:
+//            break;
+//        case SENSOR_ID_TEMPERATURE:
+//        case SENSOR_ID_HUMIDITY:
+//        case SENSOR_ID_AMBIENT_LIGHT:
+//        case SENSOR_ID_PIR:
+//            valid = true;
+//    };
 
-    switch(sensorId) {
-        case SENSOR_ID_NONE:
-            break;
-        case SENSOR_ID_TEMPERATURE:
-        case SENSOR_ID_HUMIDITY:
-        case SENSOR_ID_AMBIENT_LIGHT:
-        case SENSOR_ID_PIR:
-            valid = true;
-    };
+    if (sensorId == SENSOR_ID_NONE) {
+        return false;
+    } else {
+        return true;
+    }
 
-    return valid;
+//    return valid;
 }
 
 

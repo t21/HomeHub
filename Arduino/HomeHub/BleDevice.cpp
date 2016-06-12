@@ -74,6 +74,45 @@ unsigned int BleDevice::getSensorIdField8() {
     return _sensorIdField8;
 }
 
+unsigned int BleDevice::getSensorIdField(int fieldNbr) {
+    switch (fieldNbr) {
+        case 1:
+            return _sensorIdField1;
+            break;
+            
+        case 2:
+            return _sensorIdField2;
+            break;
+            
+        case 3:
+            return _sensorIdField3;
+            break;
+            
+        case 4:
+            return _sensorIdField4;
+            break;
+            
+        case 5:
+            return _sensorIdField5;
+            break;
+            
+        case 6:
+            return _sensorIdField6;
+            break;
+            
+        case 7:
+            return _sensorIdField7;
+            break;
+            
+        case 8:
+            return _sensorIdField8;
+            break;
+            
+        default:
+            return 0;
+            break;
+    }
+}
 
 BluetoothDeviceAddress BleDevice::getBluetoothDeviceAddress()
 {

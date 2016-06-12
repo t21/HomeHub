@@ -41,6 +41,7 @@ class BleDevice {
     unsigned int getSensorIdField6();
     unsigned int getSensorIdField7();
     unsigned int getSensorIdField8();
+    unsigned int getSensorIdField(int fieldNbr);
     BluetoothDeviceAddress getBluetoothDeviceAddress();
 
   private:
