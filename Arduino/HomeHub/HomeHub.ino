@@ -322,6 +322,8 @@ void handleBleData()
     unsigned long startTime = millis();
     boolean timedOut = false;
 
+//    Serial.println("Starting reception");
+
     rx[i] = Serial1.read();
     while (rx[i] != '\n') {
         if (Serial1.available()) {
@@ -333,11 +335,21 @@ void handleBleData()
         }
     }
     rx[i-1] = 0;
-    rxLen = i;
+    rxLen = i - 1;
     Serial.println(rx);
-    //Serial.println(rxLen);
+//    Serial.println(rxLen);
 
+    if (timedOut) {
+        Serial.println("Timed out");
+    }
 
+    int advDataLen = ((rx[8] - '0') << 4) | (rx[9] - '0');
+//    Serial.println(advDataLen);
+//    Serial.print("Uträknad längd:"); Serial.println(11 + 2*advDataLen);
+    if (rxLen != (11 + 2*advDataLen)) {
+        Serial.println("Advertising data length not correct");
+    }
+        
 //    return;
 
 
@@ -366,11 +378,6 @@ void handleBleData()
 
         boolean sensorValuesUpdated = false;
 
-        int advDataLen = ((rx[8] - '0') * 10) + (rx[9] - '0');
-        Serial.println(advDataLen);
-        if (rxLen != (11 + 59 + 8 + advDataLen)) {
-            Serial.println("Advertising data length not correct");
-        }
         
         unsigned int sensorId;
         for (int i = 1; i < 9; i++) {
@@ -393,7 +400,7 @@ void handleBleData()
             String t = bleDeviceList[device_index].getThingSpeakWriteAPIKey();
             char t2[50];
             t.toCharArray(t2, 50);
-            ThingSpeak.writeFields(bleDeviceList[device_index].getThingSpeakChannelNumber(), t2);
+//            ThingSpeak.writeFields(bleDeviceList[device_index].getThingSpeakChannelNumber(), t2);
             lastThingSpeakTestTime = millis();
         }
     }
