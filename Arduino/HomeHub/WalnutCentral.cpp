@@ -137,7 +137,6 @@ int WalnutCentral::addDevice(BluetoothDeviceAddress address) {
         Serial.println(tx);
     #endif
     
-    //strcpy(tx, "AT+DEVADD=D5:A9:E3:C1:1B:A4");
     int err_code = sendString(tx, strlen(tx));
     if (err_code != 0) {
         return err_code;

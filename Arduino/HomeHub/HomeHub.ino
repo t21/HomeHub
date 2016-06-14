@@ -11,7 +11,7 @@
 #include "ThingSpeak.h"
 
 //#define PRINT_DEBUG_MESSAGES
-//#define JOBB
+#define JOBB
 
 #if defined(ARDUINO_SAMD_FEATHER_M0)
 
@@ -82,7 +82,7 @@ void setup()
 {
     initGPIO();
     initDebugUart();
-    initWifi();
+    //initWifi();
     initThingspeak();
     setupBleDevices();
     initBle();
@@ -116,7 +116,7 @@ void loop()
 
     // Check Wifi-status
     if ((millis() - lastWifiCheckTime) > WIFI_CHECK_INTERVAL_MS) {
-//        printWifiConnectionStatus();
+        printWifiConnectionStatus();
         lastWifiCheckTime = millis();
     }    
 }
@@ -171,15 +171,19 @@ void initWifi()
         exit(0);
     }
 
+    listNetworks();
+    //exit(0);
+    
     // attempt to connect to Wifi network:
     WiFi.begin(ssid, pass);
     Serial.print("Attempting to connect to SSID: ");
     Serial.println(ssid);
-    while ( WiFi.status() != WL_CONNECTED) {
+    while (WiFi.status() != WL_CONNECTED) {
         // wait for connection:
         delay(500);
         Serial.print('.');
     }
+    
     //Serial.println();
 //    // attempt to connect to Wifi network:
 //    while ( status != WL_CONNECTED) {
@@ -198,6 +202,54 @@ void initWifi()
     printWifiStatus();
 }
 
+
+void listNetworks() {
+  // scan for nearby networks:
+  Serial.println("** Scan Networks **");
+  int numSsid = WiFi.scanNetworks();
+  if (numSsid == -1)
+  {
+    Serial.println("Couldn't get a wifi connection");
+    while (true);
+  }
+
+  // print the list of networks seen:
+  Serial.print("number of available networks:");
+  Serial.println(numSsid);
+
+  // print the network number and name for each network found:
+  for (int thisNet = 0; thisNet < numSsid; thisNet++) {
+    Serial.print(thisNet);
+    Serial.print(") ");
+    Serial.print(WiFi.SSID(thisNet));
+    Serial.print("\tSignal: ");
+    Serial.print(WiFi.RSSI(thisNet));
+    Serial.print(" dBm");
+    Serial.print("\tEncryption: ");
+    printEncryptionType(WiFi.encryptionType(thisNet));
+    Serial.flush();
+  }
+}
+void printEncryptionType(int thisType) {
+  // read the encryption type and print out the name:
+  switch (thisType) {
+    case ENC_TYPE_WEP:
+      Serial.println("WEP");
+      break;
+    case ENC_TYPE_TKIP:
+      Serial.println("WPA");
+      break;
+    case ENC_TYPE_CCMP:
+      Serial.println("WPA2");
+      break;
+    case ENC_TYPE_NONE:
+      Serial.println("None");
+      break;
+    case ENC_TYPE_AUTO:
+      Serial.println("Auto");
+      break;
+  }
+}
 
 void initThingspeak()
 {
@@ -234,6 +286,34 @@ void setupBleDevices()
                                  SENSOR_ID_BATTERY_CAPACITY,
                                  0     // SensorId <-> ThingSpeak Field # mapping
                                  );
+                                 
+    bleDeviceList[2] = BleDevice(BluetoothDeviceAddress(0xD3,0x00,0x01,0x0C,0xAF,0x68),
+                                 BD_OP_MODE_ADV,            // BLE operating mode
+                                 123989,                    // ThingSpeak channel number
+                                 "6YEZIFV5NCUHOS6B",        // ThingSpeak write API Key
+                                 SENSOR_ID_TEMPERATURE,
+                                 SENSOR_ID_HUMIDITY,
+                                 SENSOR_ID_AMBIENT_LIGHT,
+                                 SENSOR_ID_BAROMETRIC_PRESSURE,
+                                 0,
+                                 0,
+                                 SENSOR_ID_BATTERY_CAPACITY,
+                                 0     // SensorId <-> ThingSpeak Field # mapping
+                                 );
+                                 
+    bleDeviceList[3] = BleDevice(BluetoothDeviceAddress(0xFB,0x06,0xBB,0x66,0x4A,0x3D),
+                                 BD_OP_MODE_ADV,            // BLE operating mode
+                                 123989,                    // ThingSpeak channel number
+                                 "6YEZIFV5NCUHOS6B",        // ThingSpeak write API Key
+                                 SENSOR_ID_TEMPERATURE,
+                                 SENSOR_ID_HUMIDITY,
+                                 SENSOR_ID_AMBIENT_LIGHT,
+                                 SENSOR_ID_BAROMETRIC_PRESSURE,
+                                 0,
+                                 0,
+                                 SENSOR_ID_BATTERY_CAPACITY,
+                                 0     // SensorId <-> ThingSpeak Field # mapping
+                                 );
 }
 
 
@@ -261,19 +341,15 @@ void addBleDevices()
 {
     int err_code;
   
-    delay(100);
-    Serial.println("Adding device to scanlist ...");
-    err_code = ble.addDevice(bleDeviceList[0].getBluetoothDeviceAddress());
-    if (err_code != 0) {
-        Serial.println("Adding BLE device FAILED!");
-    }   
-
-    delay(100);
-    Serial.println("Adding device to scanlist ...");
-    err_code = ble.addDevice(bleDeviceList[1].getBluetoothDeviceAddress());
-    if (err_code != 0) {
-        Serial.println("Adding BLE device FAILED!");
-    }   
+    Serial.println("Adding device(s) to scanlist ...");
+    
+    for (int i = 0; i < NBR_OF_BLE_DEVICES; i++) {
+        err_code = ble.addDevice(bleDeviceList[i].getBluetoothDeviceAddress());
+        Serial.print("Attempting to add device #"); Serial.println(i);
+        if (err_code != 0) {
+            Serial.println("Adding BLE device FAILED!");
+        }   
+    }
 }
 
 
@@ -400,7 +476,7 @@ void handleBleData()
             String t = bleDeviceList[device_index].getThingSpeakWriteAPIKey();
             char t2[50];
             t.toCharArray(t2, 50);
-//            ThingSpeak.writeFields(bleDeviceList[device_index].getThingSpeakChannelNumber(), t2);
+            ThingSpeak.writeFields(bleDeviceList[device_index].getThingSpeakChannelNumber(), t2);
             lastThingSpeakTestTime = millis();
         }
     }
