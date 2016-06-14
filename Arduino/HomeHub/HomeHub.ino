@@ -11,7 +11,7 @@
 #include "ThingSpeak.h"
 
 //#define PRINT_DEBUG_MESSAGES
-#define JOBB
+//#define JOBB
 
 #if defined(ARDUINO_SAMD_FEATHER_M0)
 
@@ -70,9 +70,9 @@ byte blinkLedStatus = 0;
 const unsigned long WIFI_CHECK_INTERVAL_MS = 30000;
 unsigned long lastWifiCheckTime;
 
-const unsigned long THINGSPEAK_TEST_INTERVAL_MS = 60000;
-unsigned long lastThingSpeakTestTime;
-int thingSpeakTestCounter = 0;
+//const unsigned long THINGSPEAK_TEST_INTERVAL_MS = 60000;
+//unsigned long lastThingSpeakTestTime;
+//int thingSpeakTestCounter = 0;
 
 /**
  * Run once initialization
@@ -82,7 +82,7 @@ void setup()
 {
     initGPIO();
     initDebugUart();
-    //initWifi();
+//    initWifi();
     initThingspeak();
     setupBleDevices();
     initBle();
@@ -91,7 +91,6 @@ void setup()
     startBleScan();
     lastBlinkTime = millis();
     lastWifiCheckTime = millis();
-    lastThingSpeakTestTime = millis();
 }
 
 
@@ -301,7 +300,7 @@ void setupBleDevices()
                                  0     // SensorId <-> ThingSpeak Field # mapping
                                  );
                                  
-    bleDeviceList[3] = BleDevice(BluetoothDeviceAddress(0xFB,0x06,0xBB,0x66,0x4A,0x3D),
+    bleDeviceList[3] = BleDevice(BluetoothDeviceAddress(0xCE,0x25,0xFB,0x5E,0x10,0x93),
                                  BD_OP_MODE_ADV,            // BLE operating mode
                                  123989,                    // ThingSpeak channel number
                                  "6YEZIFV5NCUHOS6B",        // ThingSpeak write API Key
@@ -405,7 +404,7 @@ void handleBleData()
         if (Serial1.available()) {
             rx[++i] = Serial1.read();
         }
-        if (millis() - startTime > 2000) {
+        if (millis() - startTime > 1000) {
             timedOut = true;
             break;
         }
@@ -423,7 +422,7 @@ void handleBleData()
 //    Serial.println(advDataLen);
 //    Serial.print("Uträknad längd:"); Serial.println(11 + 2*advDataLen);
     if (rxLen != (11 + 2*advDataLen)) {
-        Serial.println("Advertising data length not correct");
+        Serial.println("Advertising data length does not match actual advertising message");
     }
         
 //    return;
@@ -477,7 +476,7 @@ void handleBleData()
             char t2[50];
             t.toCharArray(t2, 50);
             ThingSpeak.writeFields(bleDeviceList[device_index].getThingSpeakChannelNumber(), t2);
-            lastThingSpeakTestTime = millis();
+//            lastThingSpeakTestTime = millis();
         }
     }
 }
