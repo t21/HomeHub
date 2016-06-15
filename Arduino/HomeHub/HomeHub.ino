@@ -12,6 +12,7 @@
 
 //#define PRINT_DEBUG_MESSAGES
 //#define JOBB
+#define SERIAL_RX_BUFFER_SIZE 256
 
 #if defined(ARDUINO_SAMD_FEATHER_M0)
 
@@ -384,6 +385,12 @@ void startBleScan()
 }
 
 
+void serailEvent1()
+{
+Serial.print("H");  
+}
+
+
 /**
  * Function that handles incoming sensor data from the BLE-module
  * and passes it on to the cloud.
@@ -476,6 +483,7 @@ void handleBleData()
             char t2[50];
             t.toCharArray(t2, 50);
             ThingSpeak.writeFields(bleDeviceList[device_index].getThingSpeakChannelNumber(), t2);
+            delay(1000);
 //            lastThingSpeakTestTime = millis();
         }
     }
