@@ -12,6 +12,7 @@
 
 //#define PRINT_DEBUG_MESSAGES
 //#define JOBB
+#define USE_BLE_HW_HANDSHAKE
 
 #if defined(ARDUINO_SAMD_FEATHER_M0)
 
@@ -30,6 +31,8 @@
     Adafruit_WINC1500Client wifiClient;
     
     const int BLE_RST_PIN = 7;  // TODO: Check correct pin
+    const int UART_CTS_PIN = 0;  // TODO: Check correct pin
+    const int UART_RTS_PIN = 0;  // TODO: Check correct pin
     
 #elif defined(ARDUINO_SAMD_MKR1000)
 
@@ -39,6 +42,8 @@
     WiFiClient wifiClient;
   
     const int BLE_RST_PIN = 7;
+    const int UART_CTS_PIN = 0;  // TODO: Check correct pin
+    const int UART_RTS_PIN = 0;  // TODO: Check correct pin
     
 #else
     #error "Unsupported board?!?"
@@ -79,7 +84,7 @@ void setup()
 {
     initGPIO();
     initDebugUart();
-//    initWifi();
+    initWifi();
     initThingspeak();
     setupBleDevices();
     initBle();
@@ -130,6 +135,15 @@ void initGPIO()
     // Initialize the blink-LED pin
     pinMode(LED_BUILTIN, OUTPUT);
     digitalWrite(LED_BUILTIN, blinkLedStatus);
+
+    #ifdef USE_BLE_HW_HANDSHAKE
+        // Initialize the UART CTS pin
+        pinMode(UART_CTS_PIN, INPUT);
+
+        // Initialize the UART RTS pin
+        pinMode(UART_RTS_PIN, OUTPUT);
+        digitalWrite(UART_RTS_PIN, LOW);
+    #endif
 }
 
 
@@ -151,8 +165,10 @@ void initDebugUart()
 void serialEventRun(void) {
 //  if (Serial.available()) 
 //          serialEvent();
-  if (Serial1.available()) 
-          serialEvent1();
+    if (Serial1.available()) {
+        Serial.println(Serial1.available());
+        serialEvent1();     
+    }
 //  if (Serial2.available()) 
 //          serialEvent2();
 //  if (Serial3.available()) 
@@ -303,8 +319,8 @@ void setupBleDevices()
                                  
     bleDeviceList[2] = BleDevice(BluetoothDeviceAddress(0xD3,0x00,0x01,0x0C,0xAF,0x68),
                                  BD_OP_MODE_ADV,            // BLE operating mode
-                                 123989,                    // ThingSpeak channel number
-                                 "6YEZIFV5NCUHOS6B",        // ThingSpeak write API Key
+                                 125355,                    // ThingSpeak channel number
+                                 "YVQ8LY80WU5BKAL7",        // ThingSpeak write API Key
                                  SENSOR_ID_TEMPERATURE,
                                  SENSOR_ID_HUMIDITY,
                                  SENSOR_ID_AMBIENT_LIGHT,
@@ -317,8 +333,8 @@ void setupBleDevices()
                                  
     bleDeviceList[3] = BleDevice(BluetoothDeviceAddress(0xCE,0x25,0xFB,0x5E,0x10,0x93),
                                  BD_OP_MODE_ADV,            // BLE operating mode
-                                 123989,                    // ThingSpeak channel number
-                                 "6YEZIFV5NCUHOS6B",        // ThingSpeak write API Key
+                                 125357,                    // ThingSpeak channel number
+                                 "0OCCAQYXET38N6ZN",        // ThingSpeak write API Key
                                  SENSOR_ID_TEMPERATURE,
                                  SENSOR_ID_HUMIDITY,
                                  SENSOR_ID_AMBIENT_LIGHT,
@@ -339,7 +355,13 @@ void initBle()
     Serial.println("Initializing BLE-module ...");
 //    Serial1.begin(115200);
     Serial1.begin(460800);
+
+    #ifdef USE_BLE_HW_HANDSHAKE
+        digitalWrite(UART_RTS_PIN, HIGH);
+    #endif
+    
     delay(100);
+    
     err_code = ble.begin(Serial1, BLE_RST_PIN);
     if (err_code != 0) {
         Serial.println("BLE-module initialization FAILED! Halting execution ...");
@@ -407,7 +429,8 @@ void startBleScan()
 void handleBleData() 
 {
 //    String rxStr;
-    char rx[150] = {0};
+    unsigned int const RX_BUF_LEN = 150;
+    char rx[RX_BUF_LEN] = {0};
     uint8_t i = 0;
     uint8_t rxLen;
     unsigned long startTime = millis();
@@ -416,7 +439,7 @@ void handleBleData()
 //    Serial.println("Starting reception");
 
     rx[i] = Serial1.read();
-    while (rx[i] != '\n') {
+    while ((rx[i] != '\n') && (i < RX_BUF_LEN)) {
         if (Serial1.available()) {
             rx[++i] = Serial1.read();
         }
@@ -458,6 +481,11 @@ void handleBleData()
 //            Serial.println(rxStr);
 //        #endif
 //        int device_index = ((rxStr[5] - '0') * 10) + (rxStr[6] - '0');
+
+        #ifdef USE_BLE_HW_HANDSHAKE
+            digitalWrite(UART_RTS_PIN, LOW);
+        #endif
+        
         int device_index = ((rx[5] - '0') * 10) + (rx[6] - '0');
         #ifdef PRINT_DEBUG_MESSAGES
             Serial.print("Device index:"); Serial.println(device_index);
@@ -469,6 +497,7 @@ void handleBleData()
 
         boolean sensorValuesUpdated = false;
 
+        unsigned long startTime = millis();
         
         unsigned int sensorId;
         for (int i = 1; i < 9; i++) {
@@ -484,6 +513,8 @@ void handleBleData()
             }
         }
         
+        Serial.print("Thingspeak data setup time: "); Serial.print(millis() - startTime); Serial.println("ms");
+        
         if (sensorValuesUpdated) {
             #ifdef PRINT_DEBUG_MESSAGES
                 Serial.println("Sending to ThingSpeak ...");
@@ -493,8 +524,13 @@ void handleBleData()
             t.toCharArray(t2, 50);
             ThingSpeak.writeFields(bleDeviceList[device_index].getThingSpeakChannelNumber(), t2);
             delay(1000);
-//            lastThingSpeakTestTime = millis();
         }
+
+        Serial.print("Thingspeak transmission time: "); Serial.print(millis() - startTime); Serial.println("ms");
+        
+        #ifdef USE_BLE_HW_HANDSHAKE
+            digitalWrite(UART_RTS_PIN, HIGH);
+        #endif
     }
 }
 

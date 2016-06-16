@@ -1,6 +1,6 @@
 #include "WalnutCentral.h"
 
-#define PRINT_DEBUG_MESSAGES
+//#define PRINT_DEBUG_MESSAGES
 
 #define MAX_BUF_SIZE 100
 #define UART_TIMEOUT 2000
@@ -161,23 +161,25 @@ int WalnutCentral::sendString(char *tx, int tx_len)
         Serial.println(tx);
     #endif
     
-//    int nbr_of_bytes_sent = _serial->println(tx);
     int nbr_of_bytes_sent = 0;
 
     for (int i = 0; i < tx_len; i++) {
+        #ifdef USE_BLE_HW_HANDSHAKE
+            while (!digitalRead(UART_CTS_PIN) {
+                delayMicroseconds(1);
+            }
+        #endif
         _serial->print(tx[i]);
-//        Serial.print(tx[i]);
         nbr_of_bytes_sent++;
-        delayMicroseconds(100);
+        #ifndef USE_BLE_HW_HANDSHAKE
+            delayMicroseconds(50);      // 45us failed @ 460kbit/s, 46us passes @ 460kbit/s
+        #endif
     }
     _serial->print('\r');
     nbr_of_bytes_sent++;
-    delayMicroseconds(10);
+    delayMicroseconds(50);
     _serial->print('\n');
     nbr_of_bytes_sent++;
-//    Serial.println();
-//    Serial.println(tx_len);
-//    Serial.println(nbr_of_bytes_sent);
   
     if (nbr_of_bytes_sent == (tx_len + 2)) {
         return 0;  
@@ -191,7 +193,7 @@ int WalnutCentral::receiveString(char *rx, int *rx_len)
 {
     memset(rx, 0, MAX_BUF_SIZE);
 
-    _serial->setTimeout(2000);
+    _serial->setTimeout(1000);
     *rx_len = _serial->readBytesUntil('\n', rx, MAX_BUF_SIZE);
     if (*rx_len > 1) {
         rx[*rx_len-1] = 0;
