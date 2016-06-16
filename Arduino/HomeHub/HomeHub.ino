@@ -12,7 +12,6 @@
 
 //#define PRINT_DEBUG_MESSAGES
 //#define JOBB
-#define SERIAL_RX_BUFFER_SIZE 256
 
 #if defined(ARDUINO_SAMD_FEATHER_M0)
 
@@ -71,9 +70,6 @@ byte blinkLedStatus = 0;
 const unsigned long WIFI_CHECK_INTERVAL_MS = 30000;
 unsigned long lastWifiCheckTime;
 
-//const unsigned long THINGSPEAK_TEST_INTERVAL_MS = 60000;
-//unsigned long lastThingSpeakTestTime;
-//int thingSpeakTestCounter = 0;
 
 /**
  * Run once initialization
@@ -150,6 +146,24 @@ void initDebugUart()
     }
     Serial.println("*** Booting up HomeHub ... ***");
 }
+
+
+void serialEventRun(void) {
+//  if (Serial.available()) 
+//          serialEvent();
+  if (Serial1.available()) 
+          serialEvent1();
+//  if (Serial2.available()) 
+//          serialEvent2();
+//  if (Serial3.available()) 
+//          serialEvent3();
+}
+
+void serialEvent1()
+{
+Serial.println("H");  
+}
+
 
 
 /**
@@ -323,12 +337,13 @@ void initBle()
   
     // Initialize the BLE module
     Serial.println("Initializing BLE-module ...");
-    Serial1.begin(115200);
+//    Serial1.begin(115200);
+    Serial1.begin(460800);
     delay(100);
     err_code = ble.begin(Serial1, BLE_RST_PIN);
     if (err_code != 0) {
         Serial.println("BLE-module initialization FAILED! Halting execution ...");
-        //exit(0);
+        exit(0);
     }
 }
 
@@ -382,12 +397,6 @@ void startBleScan()
     if (err_code != 0) {
         Serial.println("Starting BLE scan FAILED!");
     }    
-}
-
-
-void serailEvent1()
-{
-Serial.print("H");  
 }
 
 

@@ -1,6 +1,6 @@
 #include "WalnutCentral.h"
 
-//#define PRINT_DEBUG_MESSAGES
+#define PRINT_DEBUG_MESSAGES
 
 #define MAX_BUF_SIZE 100
 #define UART_TIMEOUT 2000
@@ -161,7 +161,23 @@ int WalnutCentral::sendString(char *tx, int tx_len)
         Serial.println(tx);
     #endif
     
-    int nbr_of_bytes_sent = _serial->println(tx);
+//    int nbr_of_bytes_sent = _serial->println(tx);
+    int nbr_of_bytes_sent = 0;
+
+    for (int i = 0; i < tx_len; i++) {
+        _serial->print(tx[i]);
+//        Serial.print(tx[i]);
+        nbr_of_bytes_sent++;
+        delayMicroseconds(100);
+    }
+    _serial->print('\r');
+    nbr_of_bytes_sent++;
+    delayMicroseconds(10);
+    _serial->print('\n');
+    nbr_of_bytes_sent++;
+//    Serial.println();
+//    Serial.println(tx_len);
+//    Serial.println(nbr_of_bytes_sent);
   
     if (nbr_of_bytes_sent == (tx_len + 2)) {
         return 0;  
