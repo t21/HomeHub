@@ -1,6 +1,6 @@
 #include "WalnutCentral.h"
 
-//#define PRINT_DEBUG_MESSAGES
+#define PRINT_DEBUG_MESSAGES
 
 #define MAX_BUF_SIZE 100
 #define UART_TIMEOUT 2000
@@ -121,21 +121,37 @@ int WalnutCentral::addDevice(BluetoothDeviceAddress address) {
     char rx[MAX_BUF_SIZE];
     int rx_len = 0;
   
-//    #ifdef PRINT_DEBUG_MESSAGES
-//        Serial.println(address.toString());
-//        String hej = "AT+DEVADD=" + address.toString();
-//        strcpy(test, "AT+DEVADD=");
-//        Serial.println(test);
-////        strcat(test, address.toString().toCharArray());
-//        hej.toCharArray(test, 50);
-//        Serial.println(test);
-//    #endif
 
     String tempStr = "AT+DEVADD=" + address.toString();
     tempStr.toCharArray(tx, MAX_BUF_SIZE);
     #ifdef PRINT_DEBUG_MESSAGES
         Serial.println(tx);
     #endif
+    
+    int err_code = sendString(tx, strlen(tx));
+    if (err_code != 0) {
+        return err_code;
+    }
+  
+    err_code = receiveString(rx, &rx_len);
+    if (err_code != 0) {
+        return err_code;
+    }
+
+    if (strcmp(rx, "OK") == 0) {
+        return 0;
+    } else {
+        return 1;
+    }
+}
+
+
+int WalnutCentral::getAdvertisingMessage(uint8_t deviceIndex) {
+    char tx[MAX_BUF_SIZE] = {0};
+    char rx[MAX_BUF_SIZE];
+    int rx_len = 0;
+  
+    sprintf(tx, "AT+ADV=%02d", deviceIndex);
     
     int err_code = sendString(tx, strlen(tx));
     if (err_code != 0) {

@@ -11,8 +11,8 @@
 #include "ThingSpeak.h"
 
 //#define PRINT_DEBUG_MESSAGES
-//#define JOBB
-#define USE_BLE_HW_HANDSHAKE
+#define JOBB
+//#define USE_BLE_HW_HANDSHAKE
 
 #if defined(ARDUINO_SAMD_FEATHER_M0)
 
@@ -84,7 +84,7 @@ void setup()
 {
     initGPIO();
     initDebugUart();
-    initWifi();
+    //initWifi();
     initThingspeak();
     setupBleDevices();
     initBle();
@@ -457,13 +457,19 @@ void handleBleData()
         Serial.println("Timed out");
     }
 
+//    ble.getAdvertisingMessage(0);
+
+//    return;
+    
     int advDataLen = ((rx[8] - '0') << 4) | (rx[9] - '0');
 //    Serial.println(advDataLen);
 //    Serial.print("Uträknad längd:"); Serial.println(11 + 2*advDataLen);
     if (rxLen != (11 + 2*advDataLen)) {
         Serial.println("Advertising data length does not match actual advertising message");
     }
-        
+
+//    ble.getAdvertisingMessage(0);
+
 //    return;
 
 
@@ -531,6 +537,7 @@ void handleBleData()
         #ifdef USE_BLE_HW_HANDSHAKE
             digitalWrite(UART_RTS_PIN, HIGH);
         #endif
+
     }
 }
 
