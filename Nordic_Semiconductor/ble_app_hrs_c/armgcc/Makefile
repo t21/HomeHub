@@ -38,7 +38,7 @@ remduplicates = $(strip $(if $1,$(firstword $1) $(call remduplicates,$(filter-ou
 #source common to all targets
 C_SOURCE_FILES += \
 $(abspath ../../nRF5_SDK_11.0.0_89a8197/components/libraries/button/app_button.c) \
-$(abspath ../../../../../../components/libraries/util/app_error.c) \
+$(abspath ../../nRF5_SDK_11.0.0_89a8197/components/libraries/util/app_error.c) \
 $(abspath ../../../../../../components/libraries/util/app_error_weak.c) \
 $(abspath ../../../../../../components/libraries/fifo/app_fifo.c) \
 $(abspath ../../../../../../components/libraries/timer/app_timer.c) \
@@ -73,35 +73,35 @@ $(abspath ../../../../../../components/softdevice/common/softdevice_handler/soft
 ASM_SOURCE_FILES  = $(abspath ../../../../../../components/toolchain/gcc/gcc_startup_nrf51.s)
 
 #includes common to all targets
-INC_PATHS  = -I$(abspath ../../../config/ble_app_hrs_c_s130_pca10028)
-INC_PATHS += -I$(abspath ../../../config)
-INC_PATHS += -I$(abspath ../../../../../../components/ble/ble_services/ble_hrs_c)
-INC_PATHS += -I$(abspath ../../../../../../components/drivers_nrf/config)
-INC_PATHS += -I$(abspath ../../../../../bsp)
-INC_PATHS += -I$(abspath ../../../../../../components/libraries/fifo)
-INC_PATHS += -I$(abspath ../../../../../../components/ble/ble_services/ble_bas_c)
-INC_PATHS += -I$(abspath ../../../../../../components/drivers_nrf/delay)
-INC_PATHS += -I$(abspath ../../../../../../components/libraries/util)
-INC_PATHS += -I$(abspath ../../../../../../components/drivers_nrf/pstorage)
-INC_PATHS += -I$(abspath ../../../../../../components/drivers_nrf/uart)
-INC_PATHS += -I$(abspath ../../../../../../components/ble/common)
-INC_PATHS += -I$(abspath ../../../../../../components/ble/device_manager)
-INC_PATHS += -I$(abspath ../../../../../../components/libraries/uart)
-INC_PATHS += -I$(abspath ../../../../../../components/device)
-INC_PATHS += -I$(abspath ../../../../../../components/ble/ble_db_discovery)
-INC_PATHS += -I$(abspath ../../../../../../components/libraries/button)
-INC_PATHS += -I$(abspath ../../../../../../components/libraries/timer)
-INC_PATHS += -I$(abspath ../../../../../../components/drivers_nrf/gpiote)
-INC_PATHS += -I$(abspath ../../../../../../external/segger_rtt)
-INC_PATHS += -I$(abspath ../../../../../../components/toolchain/CMSIS/Include)
-INC_PATHS += -I$(abspath ../../../../../../components/drivers_nrf/hal)
-INC_PATHS += -I$(abspath ../../../../../../components/toolchain/gcc)
-INC_PATHS += -I$(abspath ../../../../../../components/toolchain)
-INC_PATHS += -I$(abspath ../../../../../../components/drivers_nrf/common)
-INC_PATHS += -I$(abspath ../../../../../../components/softdevice/s130/headers/nrf51)
-INC_PATHS += -I$(abspath ../../../../../../components/libraries/trace)
-INC_PATHS += -I$(abspath ../../../../../../components/softdevice/common/softdevice_handler)
-INC_PATHS += -I$(abspath ../../../../../../components/softdevice/s130/headers)
+INC_PATHS  = -I$(abspath ../config/ble_app_hrs_c_s130_pca10028)
+INC_PATHS += -I$(abspath ../config)
+INC_PATHS += -I$(abspath ../../nRF5_SDK_11.0.0_89a8197/components/ble/ble_services/ble_hrs_c)
+INC_PATHS += -I$(abspath ../../nRF5_SDK_11.0.0_89a8197/components/drivers_nrf/config)
+INC_PATHS += -I$(abspath ../../nRF5_SDK_11.0.0_89a8197/examples/bsp)
+INC_PATHS += -I$(abspath ../../nRF5_SDK_11.0.0_89a8197/components/libraries/fifo)
+INC_PATHS += -I$(abspath ../../nRF5_SDK_11.0.0_89a8197/components/ble/ble_services/ble_bas_c)
+INC_PATHS += -I$(abspath ../../nRF5_SDK_11.0.0_89a8197/components/drivers_nrf/delay)
+INC_PATHS += -I$(abspath ../../nRF5_SDK_11.0.0_89a8197/components/libraries/util)
+INC_PATHS += -I$(abspath ../../nRF5_SDK_11.0.0_89a8197/components/drivers_nrf/pstorage)
+INC_PATHS += -I$(abspath ../../nRF5_SDK_11.0.0_89a8197/components/drivers_nrf/uart)
+INC_PATHS += -I$(abspath ../../nRF5_SDK_11.0.0_89a8197/components/ble/common)
+INC_PATHS += -I$(abspath ../../nRF5_SDK_11.0.0_89a8197/components/ble/device_manager)
+INC_PATHS += -I$(abspath ../../nRF5_SDK_11.0.0_89a8197/components/libraries/uart)
+INC_PATHS += -I$(abspath ../../nRF5_SDK_11.0.0_89a8197/components/device)
+INC_PATHS += -I$(abspath ../../nRF5_SDK_11.0.0_89a8197/components/ble/ble_db_discovery)
+INC_PATHS += -I$(abspath ../../nRF5_SDK_11.0.0_89a8197/components/libraries/button)
+INC_PATHS += -I$(abspath ../../nRF5_SDK_11.0.0_89a8197/components/libraries/timer)
+INC_PATHS += -I$(abspath ../../nRF5_SDK_11.0.0_89a8197/components/drivers_nrf/gpiote)
+INC_PATHS += -I$(abspath ../../nRF5_SDK_11.0.0_89a8197/external/segger_rtt)
+INC_PATHS += -I$(abspath ../../nRF5_SDK_11.0.0_89a8197/components/toolchain/CMSIS/Include)
+INC_PATHS += -I$(abspath ../../nRF5_SDK_11.0.0_89a8197/components/drivers_nrf/hal)
+INC_PATHS += -I$(abspath ../../nRF5_SDK_11.0.0_89a8197/components/toolchain/gcc)
+INC_PATHS += -I$(abspath ../../nRF5_SDK_11.0.0_89a8197/components/toolchain)
+INC_PATHS += -I$(abspath ../../nRF5_SDK_11.0.0_89a8197/components/drivers_nrf/common)
+INC_PATHS += -I$(abspath ../../nRF5_SDK_11.0.0_89a8197/components/softdevice/s130/headers/nrf51)
+INC_PATHS += -I$(abspath ../../nRF5_SDK_11.0.0_89a8197/components/libraries/trace)
+INC_PATHS += -I$(abspath ../../nRF5_SDK_11.0.0_89a8197/components/softdevice/common/softdevice_handler)
+INC_PATHS += -I$(abspath ../../nRF5_SDK_11.0.0_89a8197/components/softdevice/s130/headers)
 
 OBJECT_DIRECTORY = _build
 LISTING_DIRECTORY = $(OBJECT_DIRECTORY)
@@ -127,6 +127,7 @@ CFLAGS += -mfloat-abi=soft
 # keep every function in separate section. This will allow linker to dump unused functions
 CFLAGS += -ffunction-sections -fdata-sections -fno-strict-aliasing
 CFLAGS += -fno-builtin --short-enums 
+CFLAGS += --specs=nano.specs -u _scanf_float -u _printf_float
 # keep every function in separate section. This will allow linker to dump unused functions
 LDFLAGS += -Xlinker -Map=$(LISTING_DIRECTORY)/$(OUTPUT_FILENAME).map
 LDFLAGS += -mthumb -mabi=aapcs -L $(TEMPLATE_PATH) -T$(LINKER_SCRIPT)
