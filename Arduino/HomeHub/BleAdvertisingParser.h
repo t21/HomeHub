@@ -20,11 +20,14 @@ class BleAdvertisingParser {
   
   public:
     BleAdvertisingParser();
-//    static float getSensorValue(String str, unsigned int sensorId);
+    static uint8_t getDeviceIndex(char *str, uint8_t strLen);
+    static uint8_t getSensorDataLength(char *str, uint8_t strLen);
+    //    static float getSensorValue(String str, unsigned int sensorId);
     static float getSensorValue(char *str, uint8_t strLen, unsigned int sensorId);
     static boolean isValidSensorId(unsigned int sensorId);
 
   private:
+    static uint8_t getBatteryCapacity(char *str, uint8_t strLen);
     void convert();
       
 };

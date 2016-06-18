@@ -11,7 +11,7 @@
 #include "ThingSpeak.h"
 
 //#define PRINT_DEBUG_MESSAGES
-#define JOBB
+//#define JOBB
 //#define USE_BLE_HW_HANDSHAKE
 
 #if defined(ARDUINO_SAMD_FEATHER_M0)
@@ -84,7 +84,7 @@ void setup()
 {
     initGPIO();
     initDebugUart();
-    //initWifi();
+    initWifi();
     initThingspeak();
     setupBleDevices();
     initBle();
@@ -162,23 +162,23 @@ void initDebugUart()
 }
 
 
-void serialEventRun(void) {
-//  if (Serial.available()) 
-//          serialEvent();
-    if (Serial1.available()) {
-        Serial.println(Serial1.available());
-        serialEvent1();     
-    }
-//  if (Serial2.available()) 
-//          serialEvent2();
-//  if (Serial3.available()) 
-//          serialEvent3();
-}
-
-void serialEvent1()
-{
-Serial.println("H");  
-}
+//void serialEventRun(void) {
+////  if (Serial.available()) 
+////          serialEvent();
+//    if (Serial1.available()) {
+//        Serial.println(Serial1.available());
+//        serialEvent1();     
+//    }
+////  if (Serial2.available()) 
+////          serialEvent2();
+////  if (Serial3.available()) 
+////          serialEvent3();
+//}
+//
+//void serialEvent1()
+//{
+//Serial.println("H");  
+//}
 
 
 
@@ -455,22 +455,16 @@ void handleBleData()
 
     if (timedOut) {
         Serial.println("Timed out");
+        return;
     }
 
-//    ble.getAdvertisingMessage(0);
-
-//    return;
-    
-    int advDataLen = ((rx[8] - '0') << 4) | (rx[9] - '0');
+    int advDataLen = BleAdvertisingParser::getSensorDataLength(rx, rxLen);
 //    Serial.println(advDataLen);
-//    Serial.print("Uträknad längd:"); Serial.println(11 + 2*advDataLen);
-    if (rxLen != (11 + 2*advDataLen)) {
+//    Serial.print("Uträknad längd:"); Serial.println(14 + 2*advDataLen);
+    if (rxLen != (14 + 2*advDataLen)) {
         Serial.println("Advertising data length does not match actual advertising message");
+        return;
     }
-
-//    ble.getAdvertisingMessage(0);
-
-//    return;
 
 
 //    delay(10);
@@ -482,42 +476,40 @@ void handleBleData()
 //    if (rxStr.length() == 0) {
 //        // Timeout occured, ignore received data
 //    } else {
-    if (!timedOut) {
-//        #ifdef PRINT_DEBUG_MESSAGES
-//            Serial.println(rxStr);
-//        #endif
-//        int device_index = ((rxStr[5] - '0') * 10) + (rxStr[6] - '0');
 
-        #ifdef USE_BLE_HW_HANDSHAKE
-            digitalWrite(UART_RTS_PIN, LOW);
-        #endif
+
+    #ifdef USE_BLE_HW_HANDSHAKE
+        digitalWrite(UART_RTS_PIN, LOW);
+    #endif
         
-        int device_index = ((rx[5] - '0') * 10) + (rx[6] - '0');
-        #ifdef PRINT_DEBUG_MESSAGES
-            Serial.print("Device index:"); Serial.println(device_index);
-        #endif
-        if (device_index >= NBR_OF_BLE_DEVICES) {
-            Serial.println("Wrong device index found ...");
-            return; 
-        }
+    int device_index = BleAdvertisingParser::getDeviceIndex(rx, rxLen);
+    
+    #ifdef PRINT_DEBUG_MESSAGES
+        Serial.print("Device index:"); Serial.println(device_index);
+    #endif
+    
+    if (device_index >= NBR_OF_BLE_DEVICES) {
+        Serial.println("Wrong device index found ...");
+        return; 
+    }
 
-        boolean sensorValuesUpdated = false;
+    boolean sensorValuesUpdated = false;
 
-        unsigned long startTime = millis();
+    startTime = millis();
         
-        unsigned int sensorId;
-        for (int i = 1; i < 9; i++) {
-            sensorId = bleDeviceList[device_index].getSensorIdField(i);
-            if (BleAdvertisingParser::isValidSensorId(sensorId)) {
-                float sensorValue = BleAdvertisingParser::getSensorValue(rx, rxLen, sensorId);
-                ThingSpeak.setField(i, sensorValue);
-                sensorValuesUpdated = true;
-                #ifdef PRINT_DEBUG_MESSAGES
-                    Serial.print("SensorId:"); Serial.println(sensorId);
-                    Serial.print("SensorValue:"); Serial.println(sensorValue);
-                #endif
-            }
+    unsigned int sensorId;
+    for (int i = 1; i < 9; i++) {
+        sensorId = bleDeviceList[device_index].getSensorIdField(i);
+        if (BleAdvertisingParser::isValidSensorId(sensorId)) {
+            float sensorValue = BleAdvertisingParser::getSensorValue(rx, rxLen, sensorId);
+            ThingSpeak.setField(i, sensorValue);
+            sensorValuesUpdated = true;
+            #ifdef PRINT_DEBUG_MESSAGES
+                Serial.print("SensorId:"); Serial.println(sensorId);
+                Serial.print("SensorValue:"); Serial.println(sensorValue);
+            #endif
         }
+    }
         
         Serial.print("Thingspeak data setup time: "); Serial.print(millis() - startTime); Serial.println("ms");
         
@@ -538,7 +530,7 @@ void handleBleData()
             digitalWrite(UART_RTS_PIN, HIGH);
         #endif
 
-    }
+    
 }
 
 

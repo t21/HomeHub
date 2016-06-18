@@ -1,9 +1,9 @@
 #include "WalnutCentral.h"
 
-#define PRINT_DEBUG_MESSAGES
+//#define PRINT_DEBUG_MESSAGES
 
 #define MAX_BUF_SIZE 100
-#define UART_TIMEOUT 2000
+#define UART_TIMEOUT 1000
 
 WalnutCentral::WalnutCentral() {
     // Empty constructor  
@@ -209,7 +209,7 @@ int WalnutCentral::receiveString(char *rx, int *rx_len)
 {
     memset(rx, 0, MAX_BUF_SIZE);
 
-    _serial->setTimeout(1000);
+    _serial->setTimeout(UART_TIMEOUT);
     *rx_len = _serial->readBytesUntil('\n', rx, MAX_BUF_SIZE);
     if (*rx_len > 1) {
         rx[*rx_len-1] = 0;
