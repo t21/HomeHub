@@ -42,7 +42,7 @@
 						<entry kind="macro" name="BOARD_PCA10028" value=""/>
 						<entry kind="macro" name="BSP_UART_SUPPORT" value=""/>
 						<entry kind="macro" name="NRF51" value=""/>
-						<entry kind="macro" name="NRF_LOG_USES_UART" value="1"/>
+						<entry kind="macro" name="NRF_LOG_USES_RTT" value="1"/>
 						<entry kind="macro" name="S130" value=""/>
 						<entry kind="macro" name="SOFTDEVICE_PRESENT" value=""/>
 						<entry kind="macro" name="SWI_DISABLE0" value=""/>
