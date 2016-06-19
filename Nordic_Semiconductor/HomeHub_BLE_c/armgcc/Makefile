@@ -177,7 +177,7 @@ vpath %.s $(ASM_PATHS)
 OBJECTS = $(C_OBJECTS) $(ASM_OBJECTS)
 
 nrf51422_xxac_s130: OUTPUT_FILENAME := nrf51422_xxac_s130
-nrf51422_xxac_s130: LINKER_SCRIPT=ble_app_hrs_c_gcc_nrf51.ld
+nrf51422_xxac_s130: LINKER_SCRIPT=ble_app_homehub_c_gcc_nrf51_AC.ld
 
 nrf51422_xxac_s130: $(BUILD_DIRECTORIES) $(OBJECTS)
 	@echo Linking target: $(OUTPUT_FILENAME).out
