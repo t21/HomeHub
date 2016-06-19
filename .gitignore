@@ -30,3 +30,5 @@ Nordic_Semiconductor/.metadata/**
 *.app
 
 *.log
+
+*.snap
