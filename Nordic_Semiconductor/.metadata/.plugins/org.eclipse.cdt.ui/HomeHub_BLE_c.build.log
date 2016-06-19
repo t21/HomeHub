@@ -1,4 +1,4 @@
-11:13:18 **** Incremental Build of configuration Default for project HomeHub_BLE_c ****
+12:39:46 **** Incremental Build of configuration Default for project HomeHub_BLE_c ****
 make VERBOSE=1 all 
 rm -rf _build
 /Applications/Xcode.app/Contents/Developer/usr/bin/make -f  Makefile -C ./  -e cleanobj
@@ -84,5 +84,5 @@ Preparing: nrf51422_xxac_s130.hex
   31212	    112	   3224	  34548	   86f4	_build/nrf51422_xxac_s130.out
 
 
-11:13:26 Build Finished (took 7s.701ms)
+12:39:53 Build Finished (took 7s.133ms)
 

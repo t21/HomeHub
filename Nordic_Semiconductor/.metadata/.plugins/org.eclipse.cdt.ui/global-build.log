@@ -1,4 +1,4 @@
-11:13:18 **** Incremental Build of configuration Default for project HomeHub_BLE_c ****
+12:39:46 **** Incremental Build of configuration Default for project HomeHub_BLE_c ****
 make VERBOSE=1 all 
 rm -rf _build
 /Applications/Xcode.app/Contents/Developer/usr/bin/make -f  Makefile -C ./  -e cleanobj

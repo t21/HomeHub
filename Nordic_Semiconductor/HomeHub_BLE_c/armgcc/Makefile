@@ -240,5 +240,5 @@ flash: nrf51422_xxac_s130
 ## Flash softdevice
 flash_softdevice:
 	@echo Flashing: s130_nrf51_2.0.0_softdevice.hex
-	nrfjprog --program ../../../../../../components/softdevice/s130/hex/s130_nrf51_2.0.0_softdevice.hex -f nrf51 --chiperase
+	nrfjprog --program ../../nRF5_SDK_11.0.0_89a8197/components/softdevice/s130/hex/s130_nrf51_2.0.0_softdevice.hex -f nrf51 --chiperase
 	nrfjprog --reset -f nrf51
