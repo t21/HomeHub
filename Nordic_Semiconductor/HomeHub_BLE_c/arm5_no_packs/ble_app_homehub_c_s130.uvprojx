@@ -332,7 +332,9 @@
             <v6WtE>0</v6WtE>
             <VariousControls>
               <MiscControls></MiscControls>
+              <Define>__HEAP_SIZE=0 BLE_STACK_SUPPORT_REQD S130 BOARD_CUSTOM NRF_LOG_USES_RTT=1 NRF51 SOFTDEVICE_PRESENT SWI_DISABLE0 DEBUG</Define>
               <Undefine></Undefine>
+              <IncludePath>..\;..\config\ble_app_hrs_c_s130_pca10028;..\config;..\..\nRF5_SDK_11.0.0_89a8197\components\ble\ble_db_discovery;..\..\nRF5_SDK_11.0.0_89a8197\components\ble\ble_services\ble_bas_c;..\..\nRF5_SDK_11.0.0_89a8197\components\ble\ble_services\ble_hrs_c;..\..\nRF5_SDK_11.0.0_89a8197\components\ble\common;..\..\nRF5_SDK_11.0.0_89a8197\components\ble\device_manager;..\..\nRF5_SDK_11.0.0_89a8197\components\ble\ble_radio_notification;..\..\nRF5_SDK_11.0.0_89a8197\components\drivers_nrf\common;..\..\nRF5_SDK_11.0.0_89a8197\components\drivers_nrf\config;..\..\nRF5_SDK_11.0.0_89a8197\components\drivers_nrf\delay;..\..\nRF5_SDK_11.0.0_89a8197\components\drivers_nrf\gpiote;..\..\nRF5_SDK_11.0.0_89a8197\components\drivers_nrf\hal;..\..\nRF5_SDK_11.0.0_89a8197\components\drivers_nrf\pstorage;..\..\nRF5_SDK_11.0.0_89a8197\components\drivers_nrf\spi_slave;..\..\nRF5_SDK_11.0.0_89a8197\components\drivers_nrf\uart;..\..\nRF5_SDK_11.0.0_89a8197\components\libraries\button;..\..\nRF5_SDK_11.0.0_89a8197\components\libraries\fifo;..\..\nRF5_SDK_11.0.0_89a8197\components\libraries\timer;..\..\nRF5_SDK_11.0.0_89a8197\components\libraries\trace;..\..\nRF5_SDK_11.0.0_89a8197\components\libraries\uart;..\..\nRF5_SDK_11.0.0_89a8197\components\libraries\util;..\..\nRF5_SDK_11.0.0_89a8197\components\softdevice\common\softdevice_handler;..\..\nRF5_SDK_11.0.0_89a8197\components\softdevice\s130\headers;..\..\nRF5_SDK_11.0.0_89a8197\components\softdevice\s130\headers\nrf51;..\..\nRF5_SDK_11.0.0_89a8197\components\toolchain;..\..\nRF5_SDK_11.0.0_89a8197\examples\bsp;..\..\nRF5_SDK_11.0.0_89a8197\external\segger_rtt</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -347,6 +349,7 @@
             <useXO>0</useXO>
             <VariousControls>
               <MiscControls></MiscControls>
+              <Define>__HEAP_SIZE=0 BLE_STACK_SUPPORT_REQD S130 BOARD_CUSTOM NRF_LOG_USES_RTT=1 NRF51 SOFTDEVICE_PRESENT SWI_DISABLE0</Define>
               <Undefine></Undefine>
               <IncludePath></IncludePath>
             </VariousControls>
@@ -377,6 +380,7 @@
             <File>
               <FileName>main.c</FileName>
               <FileType>1</FileType>
+              <FilePath>..\main.c</FilePath>
               <FileOption>
                 <CommonProperty>
                   <UseCPPCompiler>0</UseCPPCompiler>
@@ -435,6 +439,7 @@
             <File>
               <FileName>bsp.c</FileName>
               <FileType>1</FileType>
+              <FilePath>..\..\nRF5_SDK_11.0.0_89a8197\examples\bsp\bsp.c</FilePath>
               <FileOption>
                 <CommonProperty>
                   <UseCPPCompiler>0</UseCPPCompiler>
@@ -442,6 +447,7 @@
                   <RVCTZI>0</RVCTZI>
                   <RVCTOtherData>0</RVCTOtherData>
                   <ModuleSelection>0</ModuleSelection>
+                  <IncludeInBuild>2</IncludeInBuild>
                   <AlwaysBuild>2</AlwaysBuild>
                   <GenerateAssemblyFile>2</GenerateAssemblyFile>
                   <AssembleAssemblyFile>2</AssembleAssemblyFile>
@@ -487,6 +493,7 @@
             <File>
               <FileName>bsp_btn_ble.c</FileName>
               <FileType>1</FileType>
+              <FilePath>..\..\nRF5_SDK_11.0.0_89a8197\examples\bsp\bsp_btn_ble.c</FilePath>
               <FileOption>
                 <CommonProperty>
                   <UseCPPCompiler>0</UseCPPCompiler>
@@ -494,6 +501,7 @@
                   <RVCTZI>0</RVCTZI>
                   <RVCTOtherData>0</RVCTOtherData>
                   <ModuleSelection>0</ModuleSelection>
+                  <IncludeInBuild>2</IncludeInBuild>
                   <AlwaysBuild>2</AlwaysBuild>
                   <GenerateAssemblyFile>2</GenerateAssemblyFile>
                   <AssembleAssemblyFile>2</AssembleAssemblyFile>
@@ -544,10 +552,12 @@
             <File>
               <FileName>Abstract.txt</FileName>
               <FileType>5</FileType>
+              <FilePath>..\Abstract.txt</FilePath>
             </File>
             <File>
               <FileName>license.txt</FileName>
               <FileType>5</FileType>
+              <FilePath>..\license.txt</FilePath>
             </File>
           </Files>
         </Group>
@@ -557,6 +567,7 @@
             <File>
               <FileName>ble_advdata.c</FileName>
               <FileType>1</FileType>
+              <FilePath>..\..\nRF5_SDK_11.0.0_89a8197\components\ble\common\ble_advdata.c</FilePath>
               <FileOption>
                 <CommonProperty>
                   <UseCPPCompiler>0</UseCPPCompiler>
@@ -610,6 +621,7 @@
             <File>
               <FileName>ble_bas_c.c</FileName>
               <FileType>1</FileType>
+              <FilePath>..\..\nRF5_SDK_11.0.0_89a8197\components\ble\ble_services\ble_bas_c\ble_bas_c.c</FilePath>
               <FileOption>
                 <CommonProperty>
                   <UseCPPCompiler>0</UseCPPCompiler>
@@ -663,6 +675,7 @@
             <File>
               <FileName>ble_conn_params.c</FileName>
               <FileType>1</FileType>
+              <FilePath>..\..\nRF5_SDK_11.0.0_89a8197\components\ble\common\ble_conn_params.c</FilePath>
               <FileOption>
                 <CommonProperty>
                   <UseCPPCompiler>0</UseCPPCompiler>
@@ -716,6 +729,7 @@
             <File>
               <FileName>ble_db_discovery.c</FileName>
               <FileType>1</FileType>
+              <FilePath>..\..\nRF5_SDK_11.0.0_89a8197\components\ble\ble_db_discovery\ble_db_discovery.c</FilePath>
               <FileOption>
                 <CommonProperty>
                   <UseCPPCompiler>0</UseCPPCompiler>
@@ -769,6 +783,7 @@
             <File>
               <FileName>ble_hrs_c.c</FileName>
               <FileType>1</FileType>
+              <FilePath>..\..\nRF5_SDK_11.0.0_89a8197\components\ble\ble_services\ble_hrs_c\ble_hrs_c.c</FilePath>
               <FileOption>
                 <CommonProperty>
                   <UseCPPCompiler>0</UseCPPCompiler>
@@ -822,6 +837,7 @@
             <File>
               <FileName>ble_srv_common.c</FileName>
               <FileType>1</FileType>
+              <FilePath>..\..\nRF5_SDK_11.0.0_89a8197\components\ble\common\ble_srv_common.c</FilePath>
               <FileOption>
                 <CommonProperty>
                   <UseCPPCompiler>0</UseCPPCompiler>
@@ -875,6 +891,7 @@
             <File>
               <FileName>device_manager_central.c</FileName>
               <FileType>1</FileType>
+              <FilePath>..\..\nRF5_SDK_11.0.0_89a8197\components\ble\device_manager\device_manager_central.c</FilePath>
               <FileOption>
                 <CommonProperty>
                   <UseCPPCompiler>0</UseCPPCompiler>
@@ -928,6 +945,7 @@
             <File>
               <FileName>ble_radio_notification.c</FileName>
               <FileType>1</FileType>
+              <FilePath>..\..\nRF5_SDK_11.0.0_89a8197\components\ble\ble_radio_notification\ble_radio_notification.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -937,6 +955,7 @@
             <File>
               <FileName>app_uart_fifo.c</FileName>
               <FileType>1</FileType>
+              <FilePath>..\..\nRF5_SDK_11.0.0_89a8197\components\libraries\uart\app_uart_fifo.c</FilePath>
               <FileOption>
                 <CommonProperty>
                   <UseCPPCompiler>0</UseCPPCompiler>
@@ -990,6 +1009,7 @@
             <File>
               <FileName>nrf_delay.c</FileName>
               <FileType>1</FileType>
+              <FilePath>..\..\nRF5_SDK_11.0.0_89a8197\components\drivers_nrf\delay\nrf_delay.c</FilePath>
               <FileOption>
                 <CommonProperty>
                   <UseCPPCompiler>0</UseCPPCompiler>
@@ -1043,6 +1063,7 @@
             <File>
               <FileName>nrf_drv_common.c</FileName>
               <FileType>1</FileType>
+              <FilePath>..\..\nRF5_SDK_11.0.0_89a8197\components\drivers_nrf\common\nrf_drv_common.c</FilePath>
               <FileOption>
                 <CommonProperty>
                   <UseCPPCompiler>0</UseCPPCompiler>
@@ -1096,6 +1117,7 @@
             <File>
               <FileName>nrf_drv_gpiote.c</FileName>
               <FileType>1</FileType>
+              <FilePath>..\..\nRF5_SDK_11.0.0_89a8197\components\drivers_nrf\gpiote\nrf_drv_gpiote.c</FilePath>
               <FileOption>
                 <CommonProperty>
                   <UseCPPCompiler>0</UseCPPCompiler>
@@ -1149,6 +1171,7 @@
             <File>
               <FileName>nrf_drv_uart.c</FileName>
               <FileType>1</FileType>
+              <FilePath>..\..\nRF5_SDK_11.0.0_89a8197\components\drivers_nrf\uart\nrf_drv_uart.c</FilePath>
               <FileOption>
                 <CommonProperty>
                   <UseCPPCompiler>0</UseCPPCompiler>
@@ -1202,6 +1225,7 @@
             <File>
               <FileName>pstorage.c</FileName>
               <FileType>1</FileType>
+              <FilePath>..\..\nRF5_SDK_11.0.0_89a8197\components\drivers_nrf\pstorage\pstorage.c</FilePath>
               <FileOption>
                 <CommonProperty>
                   <UseCPPCompiler>0</UseCPPCompiler>
@@ -1255,6 +1279,7 @@
             <File>
               <FileName>nrf_drv_spis.c</FileName>
               <FileType>1</FileType>
+              <FilePath>..\..\nRF5_SDK_11.0.0_89a8197\components\drivers_nrf\spi_slave\nrf_drv_spis.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -1264,6 +1289,7 @@
             <File>
               <FileName>app_button.c</FileName>
               <FileType>1</FileType>
+              <FilePath>..\..\nRF5_SDK_11.0.0_89a8197\components\libraries\button\app_button.c</FilePath>
               <FileOption>
                 <CommonProperty>
                   <UseCPPCompiler>0</UseCPPCompiler>
@@ -1317,6 +1343,7 @@
             <File>
               <FileName>app_error.c</FileName>
               <FileType>1</FileType>
+              <FilePath>..\..\nRF5_SDK_11.0.0_89a8197\components\libraries\util\app_error.c</FilePath>
               <FileOption>
                 <CommonProperty>
                   <UseCPPCompiler>0</UseCPPCompiler>
@@ -1370,6 +1397,7 @@
             <File>
               <FileName>app_error_weak.c</FileName>
               <FileType>1</FileType>
+              <FilePath>..\..\nRF5_SDK_11.0.0_89a8197\components\libraries\util\app_error_weak.c</FilePath>
               <FileOption>
                 <CommonProperty>
                   <UseCPPCompiler>0</UseCPPCompiler>
@@ -1377,6 +1405,7 @@
                   <RVCTZI>0</RVCTZI>
                   <RVCTOtherData>0</RVCTOtherData>
                   <ModuleSelection>0</ModuleSelection>
+                  <IncludeInBuild>2</IncludeInBuild>
                   <AlwaysBuild>2</AlwaysBuild>
                   <GenerateAssemblyFile>2</GenerateAssemblyFile>
                   <AssembleAssemblyFile>2</AssembleAssemblyFile>
@@ -1422,6 +1451,7 @@
             <File>
               <FileName>app_fifo.c</FileName>
               <FileType>1</FileType>
+              <FilePath>..\..\nRF5_SDK_11.0.0_89a8197\components\libraries\fifo\app_fifo.c</FilePath>
               <FileOption>
                 <CommonProperty>
                   <UseCPPCompiler>0</UseCPPCompiler>
@@ -1475,6 +1505,7 @@
             <File>
               <FileName>app_timer.c</FileName>
               <FileType>1</FileType>
+              <FilePath>..\..\nRF5_SDK_11.0.0_89a8197\components\libraries\timer\app_timer.c</FilePath>
               <FileOption>
                 <CommonProperty>
                   <UseCPPCompiler>0</UseCPPCompiler>
@@ -1528,6 +1559,7 @@
             <File>
               <FileName>app_trace.c</FileName>
               <FileType>1</FileType>
+              <FilePath>..\..\nRF5_SDK_11.0.0_89a8197\components\libraries\trace\app_trace.c</FilePath>
               <FileOption>
                 <CommonProperty>
                   <UseCPPCompiler>0</UseCPPCompiler>
@@ -1581,6 +1613,7 @@
             <File>
               <FileName>app_util_platform.c</FileName>
               <FileType>1</FileType>
+              <FilePath>..\..\nRF5_SDK_11.0.0_89a8197\components\libraries\util\app_util_platform.c</FilePath>
               <FileOption>
                 <CommonProperty>
                   <UseCPPCompiler>0</UseCPPCompiler>
@@ -1634,6 +1667,7 @@
             <File>
               <FileName>nrf_assert.c</FileName>
               <FileType>1</FileType>
+              <FilePath>..\..\nRF5_SDK_11.0.0_89a8197\components\libraries\util\nrf_assert.c</FilePath>
               <FileOption>
                 <CommonProperty>
                   <UseCPPCompiler>0</UseCPPCompiler>
@@ -1687,6 +1721,7 @@
             <File>
               <FileName>nrf_log.c</FileName>
               <FileType>1</FileType>
+              <FilePath>..\..\nRF5_SDK_11.0.0_89a8197\components\libraries\util\nrf_log.c</FilePath>
               <FileOption>
                 <CommonProperty>
                   <UseCPPCompiler>0</UseCPPCompiler>
@@ -1740,6 +1775,7 @@
             <File>
               <FileName>retarget.c</FileName>
               <FileType>1</FileType>
+              <FilePath>..\..\nRF5_SDK_11.0.0_89a8197\components\libraries\uart\retarget.c</FilePath>
               <FileOption>
                 <CommonProperty>
                   <UseCPPCompiler>0</UseCPPCompiler>
@@ -1798,6 +1834,7 @@
             <File>
               <FileName>RTT_Syscalls_KEIL.c</FileName>
               <FileType>1</FileType>
+              <FilePath>..\..\nRF5_SDK_11.0.0_89a8197\external\segger_rtt\RTT_Syscalls_KEIL.c</FilePath>
               <FileOption>
                 <CommonProperty>
                   <UseCPPCompiler>0</UseCPPCompiler>
@@ -1851,6 +1888,7 @@
             <File>
               <FileName>SEGGER_RTT.c</FileName>
               <FileType>1</FileType>
+              <FilePath>..\..\nRF5_SDK_11.0.0_89a8197\external\segger_rtt\SEGGER_RTT.c</FilePath>
               <FileOption>
                 <CommonProperty>
                   <UseCPPCompiler>0</UseCPPCompiler>
@@ -1904,6 +1942,7 @@
             <File>
               <FileName>SEGGER_RTT_printf.c</FileName>
               <FileType>1</FileType>
+              <FilePath>..\..\nRF5_SDK_11.0.0_89a8197\external\segger_rtt\SEGGER_RTT_printf.c</FilePath>
               <FileOption>
                 <CommonProperty>
                   <UseCPPCompiler>0</UseCPPCompiler>
@@ -1962,6 +2001,7 @@
             <File>
               <FileName>s130_nrf51_2.0.0_licence_agreement.txt</FileName>
               <FileType>5</FileType>
+              <FilePath>..\..\nRF5_SDK_11.0.0_89a8197\components\softdevice\s130\doc\s130_nrf51_2.0.0_licence_agreement.txt</FilePath>
               <FileOption>
                 <CommonProperty>
                   <UseCPPCompiler>0</UseCPPCompiler>
@@ -1985,6 +2025,7 @@
             <File>
               <FileName>softdevice_handler.c</FileName>
               <FileType>1</FileType>
+              <FilePath>..\..\nRF5_SDK_11.0.0_89a8197\components\softdevice\common\softdevice_handler\softdevice_handler.c</FilePath>
               <FileOption>
                 <CommonProperty>
                   <UseCPPCompiler>0</UseCPPCompiler>
@@ -2418,6 +2459,7 @@
             <File>
               <FileName>main.c</FileName>
               <FileType>1</FileType>
+              <FilePath>..\main.c</FilePath>
               <FileOption>
                 <CommonProperty>
                   <UseCPPCompiler>0</UseCPPCompiler>
@@ -2476,6 +2518,7 @@
             <File>
               <FileName>bsp.c</FileName>
               <FileType>1</FileType>
+              <FilePath>..\..\nRF5_SDK_11.0.0_89a8197\examples\bsp\bsp.c</FilePath>
               <FileOption>
                 <CommonProperty>
                   <UseCPPCompiler>0</UseCPPCompiler>
@@ -2529,6 +2572,7 @@
             <File>
               <FileName>bsp_btn_ble.c</FileName>
               <FileType>1</FileType>
+              <FilePath>..\..\nRF5_SDK_11.0.0_89a8197\examples\bsp\bsp_btn_ble.c</FilePath>
               <FileOption>
                 <CommonProperty>
                   <UseCPPCompiler>0</UseCPPCompiler>
@@ -2587,10 +2631,12 @@
             <File>
               <FileName>Abstract.txt</FileName>
               <FileType>5</FileType>
+              <FilePath>..\Abstract.txt</FilePath>
             </File>
             <File>
               <FileName>license.txt</FileName>
               <FileType>5</FileType>
+              <FilePath>..\license.txt</FilePath>
             </File>
           </Files>
         </Group>
@@ -2600,6 +2646,7 @@
             <File>
               <FileName>ble_advdata.c</FileName>
               <FileType>1</FileType>
+              <FilePath>..\..\nRF5_SDK_11.0.0_89a8197\components\ble\common\ble_advdata.c</FilePath>
               <FileOption>
                 <CommonProperty>
                   <UseCPPCompiler>0</UseCPPCompiler>
@@ -2653,6 +2700,7 @@
             <File>
               <FileName>ble_bas_c.c</FileName>
               <FileType>1</FileType>
+              <FilePath>..\..\nRF5_SDK_11.0.0_89a8197\components\ble\ble_services\ble_bas_c\ble_bas_c.c</FilePath>
               <FileOption>
                 <CommonProperty>
                   <UseCPPCompiler>0</UseCPPCompiler>
@@ -2706,6 +2754,7 @@
             <File>
               <FileName>ble_conn_params.c</FileName>
               <FileType>1</FileType>
+              <FilePath>..\..\nRF5_SDK_11.0.0_89a8197\components\ble\common\ble_conn_params.c</FilePath>
               <FileOption>
                 <CommonProperty>
                   <UseCPPCompiler>0</UseCPPCompiler>
@@ -2759,6 +2808,7 @@
             <File>
               <FileName>ble_db_discovery.c</FileName>
               <FileType>1</FileType>
+              <FilePath>..\..\nRF5_SDK_11.0.0_89a8197\components\ble\ble_db_discovery\ble_db_discovery.c</FilePath>
               <FileOption>
                 <CommonProperty>
                   <UseCPPCompiler>0</UseCPPCompiler>
@@ -2812,6 +2862,7 @@
             <File>
               <FileName>ble_hrs_c.c</FileName>
               <FileType>1</FileType>
+              <FilePath>..\..\nRF5_SDK_11.0.0_89a8197\components\ble\ble_services\ble_hrs_c\ble_hrs_c.c</FilePath>
               <FileOption>
                 <CommonProperty>
                   <UseCPPCompiler>0</UseCPPCompiler>
@@ -2865,6 +2916,7 @@
             <File>
               <FileName>ble_srv_common.c</FileName>
               <FileType>1</FileType>
+              <FilePath>..\..\nRF5_SDK_11.0.0_89a8197\components\ble\common\ble_srv_common.c</FilePath>
               <FileOption>
                 <CommonProperty>
                   <UseCPPCompiler>0</UseCPPCompiler>
@@ -2918,6 +2970,7 @@
             <File>
               <FileName>device_manager_central.c</FileName>
               <FileType>1</FileType>
+              <FilePath>..\..\nRF5_SDK_11.0.0_89a8197\components\ble\device_manager\device_manager_central.c</FilePath>
               <FileOption>
                 <CommonProperty>
                   <UseCPPCompiler>0</UseCPPCompiler>
@@ -2971,6 +3024,7 @@
             <File>
               <FileName>ble_radio_notification.c</FileName>
               <FileType>1</FileType>
+              <FilePath>..\..\nRF5_SDK_11.0.0_89a8197\components\ble\ble_radio_notification\ble_radio_notification.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -2980,6 +3034,7 @@
             <File>
               <FileName>app_uart_fifo.c</FileName>
               <FileType>1</FileType>
+              <FilePath>..\..\nRF5_SDK_11.0.0_89a8197\components\libraries\uart\app_uart_fifo.c</FilePath>
               <FileOption>
                 <CommonProperty>
                   <UseCPPCompiler>0</UseCPPCompiler>
@@ -3033,6 +3088,7 @@
             <File>
               <FileName>nrf_delay.c</FileName>
               <FileType>1</FileType>
+              <FilePath>..\..\nRF5_SDK_11.0.0_89a8197\components\drivers_nrf\delay\nrf_delay.c</FilePath>
               <FileOption>
                 <CommonProperty>
                   <UseCPPCompiler>0</UseCPPCompiler>
@@ -3086,6 +3142,7 @@
             <File>
               <FileName>nrf_drv_common.c</FileName>
               <FileType>1</FileType>
+              <FilePath>..\..\nRF5_SDK_11.0.0_89a8197\components\drivers_nrf\common\nrf_drv_common.c</FilePath>
               <FileOption>
                 <CommonProperty>
                   <UseCPPCompiler>0</UseCPPCompiler>
@@ -3139,6 +3196,7 @@
             <File>
               <FileName>nrf_drv_gpiote.c</FileName>
               <FileType>1</FileType>
+              <FilePath>..\..\nRF5_SDK_11.0.0_89a8197\components\drivers_nrf\gpiote\nrf_drv_gpiote.c</FilePath>
               <FileOption>
                 <CommonProperty>
                   <UseCPPCompiler>0</UseCPPCompiler>
@@ -3192,6 +3250,7 @@
             <File>
               <FileName>nrf_drv_uart.c</FileName>
               <FileType>1</FileType>
+              <FilePath>..\..\nRF5_SDK_11.0.0_89a8197\components\drivers_nrf\uart\nrf_drv_uart.c</FilePath>
               <FileOption>
                 <CommonProperty>
                   <UseCPPCompiler>0</UseCPPCompiler>
@@ -3245,6 +3304,7 @@
             <File>
               <FileName>pstorage.c</FileName>
               <FileType>1</FileType>
+              <FilePath>..\..\nRF5_SDK_11.0.0_89a8197\components\drivers_nrf\pstorage\pstorage.c</FilePath>
               <FileOption>
                 <CommonProperty>
                   <UseCPPCompiler>0</UseCPPCompiler>
@@ -3298,6 +3358,7 @@
             <File>
               <FileName>nrf_drv_spis.c</FileName>
               <FileType>1</FileType>
+              <FilePath>..\..\nRF5_SDK_11.0.0_89a8197\components\drivers_nrf\spi_slave\nrf_drv_spis.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -3307,6 +3368,7 @@
             <File>
               <FileName>app_button.c</FileName>
               <FileType>1</FileType>
+              <FilePath>..\..\nRF5_SDK_11.0.0_89a8197\components\libraries\button\app_button.c</FilePath>
               <FileOption>
                 <CommonProperty>
                   <UseCPPCompiler>0</UseCPPCompiler>
@@ -3360,6 +3422,7 @@
             <File>
               <FileName>app_error.c</FileName>
               <FileType>1</FileType>
+              <FilePath>..\..\nRF5_SDK_11.0.0_89a8197\components\libraries\util\app_error.c</FilePath>
               <FileOption>
                 <CommonProperty>
                   <UseCPPCompiler>0</UseCPPCompiler>
@@ -3413,6 +3476,7 @@
             <File>
               <FileName>app_error_weak.c</FileName>
               <FileType>1</FileType>
+              <FilePath>..\..\nRF5_SDK_11.0.0_89a8197\components\libraries\util\app_error_weak.c</FilePath>
               <FileOption>
                 <CommonProperty>
                   <UseCPPCompiler>0</UseCPPCompiler>
@@ -3466,6 +3530,7 @@
             <File>
               <FileName>app_fifo.c</FileName>
               <FileType>1</FileType>
+              <FilePath>..\..\nRF5_SDK_11.0.0_89a8197\components\libraries\fifo\app_fifo.c</FilePath>
               <FileOption>
                 <CommonProperty>
                   <UseCPPCompiler>0</UseCPPCompiler>
@@ -3519,6 +3584,7 @@
             <File>
               <FileName>app_timer.c</FileName>
               <FileType>1</FileType>
+              <FilePath>..\..\nRF5_SDK_11.0.0_89a8197\components\libraries\timer\app_timer.c</FilePath>
               <FileOption>
                 <CommonProperty>
                   <UseCPPCompiler>0</UseCPPCompiler>
@@ -3572,6 +3638,7 @@
             <File>
               <FileName>app_trace.c</FileName>
               <FileType>1</FileType>
+              <FilePath>..\..\nRF5_SDK_11.0.0_89a8197\components\libraries\trace\app_trace.c</FilePath>
               <FileOption>
                 <CommonProperty>
                   <UseCPPCompiler>0</UseCPPCompiler>
@@ -3625,6 +3692,7 @@
             <File>
               <FileName>app_util_platform.c</FileName>
               <FileType>1</FileType>
+              <FilePath>..\..\nRF5_SDK_11.0.0_89a8197\components\libraries\util\app_util_platform.c</FilePath>
               <FileOption>
                 <CommonProperty>
                   <UseCPPCompiler>0</UseCPPCompiler>
@@ -3678,6 +3746,7 @@
             <File>
               <FileName>nrf_assert.c</FileName>
               <FileType>1</FileType>
+              <FilePath>..\..\nRF5_SDK_11.0.0_89a8197\components\libraries\util\nrf_assert.c</FilePath>
               <FileOption>
                 <CommonProperty>
                   <UseCPPCompiler>0</UseCPPCompiler>
@@ -3731,6 +3800,7 @@
             <File>
               <FileName>nrf_log.c</FileName>
               <FileType>1</FileType>
+              <FilePath>..\..\nRF5_SDK_11.0.0_89a8197\components\libraries\util\nrf_log.c</FilePath>
               <FileOption>
                 <CommonProperty>
                   <UseCPPCompiler>0</UseCPPCompiler>
@@ -3784,6 +3854,7 @@
             <File>
               <FileName>retarget.c</FileName>
               <FileType>1</FileType>
+              <FilePath>..\..\nRF5_SDK_11.0.0_89a8197\components\libraries\uart\retarget.c</FilePath>
               <FileOption>
                 <CommonProperty>
                   <UseCPPCompiler>0</UseCPPCompiler>
@@ -3842,6 +3913,7 @@
             <File>
               <FileName>RTT_Syscalls_KEIL.c</FileName>
               <FileType>1</FileType>
+              <FilePath>..\..\nRF5_SDK_11.0.0_89a8197\external\segger_rtt\RTT_Syscalls_KEIL.c</FilePath>
               <FileOption>
                 <CommonProperty>
                   <UseCPPCompiler>0</UseCPPCompiler>
@@ -3895,6 +3967,7 @@
             <File>
               <FileName>SEGGER_RTT.c</FileName>
               <FileType>1</FileType>
+              <FilePath>..\..\nRF5_SDK_11.0.0_89a8197\external\segger_rtt\SEGGER_RTT.c</FilePath>
               <FileOption>
                 <CommonProperty>
                   <UseCPPCompiler>0</UseCPPCompiler>
@@ -3948,6 +4021,7 @@
             <File>
               <FileName>SEGGER_RTT_printf.c</FileName>
               <FileType>1</FileType>
+              <FilePath>..\..\nRF5_SDK_11.0.0_89a8197\external\segger_rtt\SEGGER_RTT_printf.c</FilePath>
               <FileOption>
                 <CommonProperty>
                   <UseCPPCompiler>0</UseCPPCompiler>
@@ -4006,6 +4080,7 @@
             <File>
               <FileName>s130_nrf51_2.0.0_licence_agreement.txt</FileName>
               <FileType>5</FileType>
+              <FilePath>..\..\nRF5_SDK_11.0.0_89a8197\components\softdevice\s130\doc\s130_nrf51_2.0.0_licence_agreement.txt</FilePath>
               <FileOption>
                 <CommonProperty>
                   <UseCPPCompiler>0</UseCPPCompiler>
@@ -4029,6 +4104,7 @@
             <File>
               <FileName>softdevice_handler.c</FileName>
               <FileType>1</FileType>
+              <FilePath>..\..\nRF5_SDK_11.0.0_89a8197\components\softdevice\common\softdevice_handler\softdevice_handler.c</FilePath>
               <FileOption>
                 <CommonProperty>
                   <UseCPPCompiler>0</UseCPPCompiler>
@@ -4207,6 +4283,7 @@
           <targetInfo name="flash_s130_nrf51_2.0.0_softdevice"/>
         </targetInfos>
       </file>
+      <file attr="config" category="source" condition="ARM Compiler" name="Device\Source\arm\arm_startup_nrf51.s" version="8.6.0">
         <instance index="0">RTE\Device\nRF51822_xxAA\arm_startup_nrf51.s</instance>
         <component Cclass="Device" Cgroup="Startup" Cvendor="NordicSemiconductor" Cversion="8.6.0" condition="nRF51 Series CMSIS Device"/>
         <package license="License\license.txt" name="nRF_DeviceFamilyPack" schemaVersion="1.3" url="http://developer.nordicsemi.com/nRF5_SDK/pieces/nRF_DeviceFamilyPack/" vendor="NordicSemiconductor" version="8.6.0"/>
@@ -4214,6 +4291,7 @@
           <targetInfo name="nrf51422_xxac_s130"/>
         </targetInfos>
       </file>
+      <file attr="config" category="source" name="Device\Source\system_nrf51.c" version="8.6.0">
         <instance index="0">RTE\Device\nRF51822_xxAA\system_nrf51.c</instance>
         <component Cclass="Device" Cgroup="Startup" Cvendor="NordicSemiconductor" Cversion="8.6.0" condition="nRF51 Series CMSIS Device"/>
         <package license="License\license.txt" name="nRF_DeviceFamilyPack" schemaVersion="1.3" url="http://developer.nordicsemi.com/nRF5_SDK/pieces/nRF_DeviceFamilyPack/" vendor="NordicSemiconductor" version="8.6.0"/>
