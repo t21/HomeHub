@@ -392,16 +392,16 @@ static ret_code_t device_manager_event_handler(const dm_handle_t    * p_handle,
 //}
 
 
-static void device_adv_print(ble_gap_evt_adv_report_t adv_report)
-{
-    APPL_LOG("[APPL]: Device found\r\n");
-    for (int i=5; i > 0; i--) {
-        APPL_LOG("%02X:", adv_report.peer_addr.addr[i]);
-    }
-    APPL_LOG("%02X\r\n", adv_report.peer_addr.addr[0]);
-    APPL_LOG("rssi: %d\r\n", adv_report.rssi);    
-    APPL_LOG("\r\n");    
-}
+//static void device_adv_print(ble_gap_evt_adv_report_t adv_report)
+//{
+//    APPL_LOG("[APPL]: Device found\r\n");
+//    for (int i=5; i > 0; i--) {
+//        APPL_LOG("%02X:", adv_report.peer_addr.addr[i]);
+//    }
+//    APPL_LOG("%02X\r\n", adv_report.peer_addr.addr[0]);
+//    APPL_LOG("rssi: %d\r\n", adv_report.rssi);
+//    APPL_LOG("\r\n");
+//}
 
 
 //static void extract_sensor_data(device_t *device, char *sensorData, uint8_t len)
@@ -1097,7 +1097,7 @@ static void nrf_log_init(void)
 static uint32_t uart_write_str(uint8_t *str, uint8_t len)
 {
     uint32_t err_code;
-    volatile uint8_t hej;
+//    volatile uint8_t hej;
     
     for (int i=0; i < len; i++) {
         err_code = app_uart_put(str[i]);

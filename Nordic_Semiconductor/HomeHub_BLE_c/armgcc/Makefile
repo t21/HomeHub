@@ -66,6 +66,7 @@ $(abspath ../../nRF5_SDK_11.0.0_89a8197/components/ble/ble_db_discovery/ble_db_d
 $(abspath ../../nRF5_SDK_11.0.0_89a8197/components/ble/ble_services/ble_hrs_c/ble_hrs_c.c) \
 $(abspath ../../nRF5_SDK_11.0.0_89a8197/components/ble/common/ble_srv_common.c) \
 $(abspath ../../nRF5_SDK_11.0.0_89a8197/components/ble/device_manager/device_manager_central.c) \
+$(abspath ../../nRF5_SDK_11.0.0_89a8197/components/ble/ble_radio_notification/ble_radio_notification.c) \
 $(abspath ../../nRF5_SDK_11.0.0_89a8197/components/toolchain/system_nrf51.c) \
 $(abspath ../../nRF5_SDK_11.0.0_89a8197/components/softdevice/common/softdevice_handler/softdevice_handler.c) \
 
@@ -73,7 +74,8 @@ $(abspath ../../nRF5_SDK_11.0.0_89a8197/components/softdevice/common/softdevice_
 ASM_SOURCE_FILES  = $(abspath ../../nRF5_SDK_11.0.0_89a8197/components/toolchain/gcc/gcc_startup_nrf51.s)
 
 #includes common to all targets
-INC_PATHS  = -I$(abspath ../config/ble_app_hrs_c_s130_pca10028)
+INC_PATHS  = -I$(abspath ../)
+INC_PATHS += -I$(abspath ../config/ble_app_hrs_c_s130_pca10028)
 INC_PATHS += -I$(abspath ../config)
 INC_PATHS += -I$(abspath ../../nRF5_SDK_11.0.0_89a8197/components/ble/ble_services/ble_hrs_c)
 INC_PATHS += -I$(abspath ../../nRF5_SDK_11.0.0_89a8197/components/drivers_nrf/config)
@@ -84,8 +86,10 @@ INC_PATHS += -I$(abspath ../../nRF5_SDK_11.0.0_89a8197/components/drivers_nrf/de
 INC_PATHS += -I$(abspath ../../nRF5_SDK_11.0.0_89a8197/components/libraries/util)
 INC_PATHS += -I$(abspath ../../nRF5_SDK_11.0.0_89a8197/components/drivers_nrf/pstorage)
 INC_PATHS += -I$(abspath ../../nRF5_SDK_11.0.0_89a8197/components/drivers_nrf/uart)
+INC_PATHS += -I$(abspath ../../nRF5_SDK_11.0.0_89a8197/components/drivers_nrf/spi_slave)
 INC_PATHS += -I$(abspath ../../nRF5_SDK_11.0.0_89a8197/components/ble/common)
 INC_PATHS += -I$(abspath ../../nRF5_SDK_11.0.0_89a8197/components/ble/device_manager)
+INC_PATHS += -I$(abspath ../../nRF5_SDK_11.0.0_89a8197/components/ble/ble_radio_notification)
 INC_PATHS += -I$(abspath ../../nRF5_SDK_11.0.0_89a8197/components/libraries/uart)
 INC_PATHS += -I$(abspath ../../nRF5_SDK_11.0.0_89a8197/components/device)
 INC_PATHS += -I$(abspath ../../nRF5_SDK_11.0.0_89a8197/components/ble/ble_db_discovery)
