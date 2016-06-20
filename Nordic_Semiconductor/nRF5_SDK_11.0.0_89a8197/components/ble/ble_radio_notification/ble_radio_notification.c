@@ -11,7 +11,7 @@
 
 #include "ble_radio_notification.h"
 #include <stdlib.h>
-
+#include "nrf_nvic.h"
 
 static bool                                 m_radio_active = false;  /**< Current radio state. */
 static ble_radio_notification_evt_handler_t m_evt_handler  = NULL;   /**< Application event handler for handling Radio Notification events. */

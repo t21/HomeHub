@@ -3,7 +3,7 @@
  * Auto generated Run-Time-Environment Component Configuration File
  *      *** Do not modify ! ***
  *
- * Project: 'ble_app_hrs_c_s130_pca10028' 
+ * Project: 'ble_app_homehub_c_s130' 
  * Target:  'nrf51422_xxac_s130' 
  */
 

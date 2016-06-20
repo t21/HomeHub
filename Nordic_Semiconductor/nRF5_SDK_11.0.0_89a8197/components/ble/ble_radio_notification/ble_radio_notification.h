@@ -24,6 +24,8 @@
 #include <stdbool.h>
 #include "nrf_soc.h"
 
+typedef uint8_t nrf_radio_notification_distance_t;
+
 /**@brief Application radio notification event handler type. */
 typedef void (*ble_radio_notification_evt_handler_t) (bool radio_active);
 
