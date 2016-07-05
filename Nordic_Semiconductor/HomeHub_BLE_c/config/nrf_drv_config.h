@@ -257,7 +257,7 @@
 #define SPIS0_INSTANCE_INDEX 0
 #endif
 
-#define SPIS1_ENABLED 0
+#define SPIS1_ENABLED 1
 
 #if (SPIS1_ENABLED == 1)
 #define SPIS1_CONFIG_SCK_PIN         2

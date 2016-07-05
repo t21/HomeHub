@@ -57,7 +57,7 @@
 #define SEC_PARAM_MITM             1                                  /**< Man In The Middle protection not required. */
 #define SEC_PARAM_LESC             0                                  /**< LE Secure Connections not enabled. */
 #define SEC_PARAM_KEYPRESS         0                                  /**< Keypress notifications not enabled. */
-#define SEC_PARAM_IO_CAPABILITIES  BLE_GAP_IO_CAPS_NONE               /**< No I/O capabilities. */
+#define SEC_PARAM_IO_CAPABILITIES  BLE_GAP_IO_CAPS_KEYBOARD_ONLY               /**< No I/O capabilities. */
 #define SEC_PARAM_OOB              0                                  /**< Out Of Band data not available. */
 #define SEC_PARAM_MIN_KEY_SIZE     7                                  /**< Minimum encryption key size. */
 #define SEC_PARAM_MAX_KEY_SIZE     16                                 /**< Maximum encryption key size. */
@@ -76,12 +76,14 @@
 #define UART_TX_BUF_SIZE 256                         /**< UART TX buffer size. */
 #define UART_RX_BUF_SIZE 256                           /**< UART RX buffer size. */
 
+// Hardware pins
 #define UART_RX_PIN_NUMBER 11
 #define UART_TX_PIN_NUMBER 9
 #define UART_RTS_PIN_NUMBER 10
 #define UART_CTS_PIN_NUMBER 8
 #define LED_1 21
 #define BUTTON_1 17
+#define IF_SEL_PIN 24	// TODO: Set correct pin number when wire has been soldered
 
 // Low frequency clock source to be used by the SoftDevice
 #ifdef S210
@@ -125,10 +127,19 @@ static dm_application_instance_t    m_dm_app_id;                         /**< Ap
 static dm_handle_t                  m_dm_device_handle;                  /**< Device Identifier identifier. */
 static uint8_t                      m_peer_count = 0;                    /**< Number of peer's connected. */
 //static ble_scan_mode_t              m_scan_mode = BLE_FAST_SCAN;         /**< Scan mode used by application. */
-//static uint16_t                     m_conn_handle;                       /**< Current connection handle. */
-static volatile bool                m_whitelist_temporarily_disabled = false; /**< True if whitelist has been temporarily disabled. */
+static uint16_t                     m_conn_handle;                       /**< Current connection handle. */
+//static volatile bool                m_whitelist_temporarily_disabled = false; /**< True if whitelist has been temporarily disabled. */
 
 static bool                         m_memory_access_in_progress = false; /**< Flag to keep track of ongoing operations on persistent memory. */
+
+
+typedef enum {
+	HW_IF_NONE,
+	HW_IF_SPI,
+	HW_IF_UART
+} hw_if_t;
+
+static hw_if_t m_hw_if;
 
 #define MAX_CHAR_RX 50  // Max length of strings received via the UART
 
@@ -152,9 +163,9 @@ typedef struct {
 } device_t;
 static device_t m_device_list[MAX_NBR_DEVICES];
 
-//static const nrf_drv_spis_t m_spi_slave_1 = NRF_DRV_SPIS_INSTANCE(1);
-//static volatile uint8_t m_slave_tx_buffer[50];
-//static volatile uint8_t m_slave_rx_buffer[50];
+static const nrf_drv_spis_t m_spi_slave_1 = NRF_DRV_SPIS_INSTANCE(1);
+static volatile uint8_t m_slave_tx_buffer[50];
+static volatile uint8_t m_slave_rx_buffer[50];
 
 APP_TIMER_DEF(m_timer_id);
 
@@ -169,8 +180,11 @@ static const ble_gap_conn_params_t m_connection_param =
     (uint16_t)SUPERVISION_TIMEOUT        // Supervision time-out
 };
 
-static void scan_start(void);
+static uint32_t scan_start(void);
 static uint32_t uart_write_str(uint8_t *str, uint8_t len);
+
+#define STATIC_PASSKEY              "123456"                                    /**< Static pin. */
+static uint8_t                             passkey[] = STATIC_PASSKEY;
 
 
 /**@brief Function for asserts in the SoftDevice.
@@ -248,7 +262,7 @@ static ret_code_t device_manager_event_handler(const dm_handle_t    * p_handle,
 //            err_code = bsp_indication_set(BSP_INDICATE_CONNECTED);
 //            APP_ERROR_CHECK(err_code);
 
-//            m_conn_handle = p_event->event_param.p_gap_param->conn_handle;
+            m_conn_handle = p_event->event_param.p_gap_param->conn_handle;
 
             m_dm_device_handle = (*p_handle);
 
@@ -348,28 +362,28 @@ static ret_code_t device_manager_event_handler(const dm_handle_t    * p_handle,
  * @retval NRF_SUCCESS if the data type is found in the report.
  * @retval NRF_ERROR_NOT_FOUND if the data type could not be found.
  */
-//static uint32_t adv_report_parse(uint8_t type, data_t * p_advdata, data_t * p_typedata)
-//{
-//    uint32_t  index = 0;
-//    uint8_t * p_data;
+static uint32_t adv_report_parse(uint8_t type, data_t * p_advdata, data_t * p_typedata)
+{
+    uint32_t  index = 0;
+    uint8_t * p_data;
 
-//    p_data = p_advdata->p_data;
+    p_data = p_advdata->p_data;
 
-//    while (index < p_advdata->data_len)
-//    {
-//        uint8_t field_length = p_data[index];
-//        uint8_t field_type   = p_data[index+1];
+    while (index < p_advdata->data_len)
+    {
+        uint8_t field_length = p_data[index];
+        uint8_t field_type   = p_data[index+1];
 
-//        if (field_type == type)
-//        {
-//            p_typedata->p_data   = &p_data[index+2];
-//            p_typedata->data_len = field_length-1;
-//            return NRF_SUCCESS;
-//        }
-//        index += field_length + 1;
-//    }
-//    return NRF_ERROR_NOT_FOUND;
-//}
+        if (field_type == type)
+        {
+            p_typedata->p_data   = &p_data[index+2];
+            p_typedata->data_len = field_length-1;
+            return NRF_SUCCESS;
+        }
+        index += field_length + 1;
+    }
+    return NRF_ERROR_NOT_FOUND;
+}
 
 
 /**@brief Function for putting the chip into sleep mode.
@@ -493,7 +507,7 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
         case BLE_GAP_EVT_ADV_REPORT:
         {
             data_t adv_data;
-//            data_t type_data;
+            data_t type_data;
             
             // Initialize advertisement report for parsing.
             adv_data.p_data = (uint8_t *)p_gap_evt->params.adv_report.data;
@@ -595,60 +609,60 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
                 }
             }
 
-//            err_code = adv_report_parse(BLE_GAP_AD_TYPE_16BIT_SERVICE_UUID_MORE_AVAILABLE,
-//                                        &adv_data,
-//                                        &type_data);
+            // Look for ESS
+            err_code = adv_report_parse(BLE_GAP_AD_TYPE_16BIT_SERVICE_UUID_MORE_AVAILABLE,
+                                        &adv_data,
+                                        &type_data);
 
-//            if (err_code != NRF_SUCCESS)
-//            {
-//                // Compare short local name in case complete name does not match.
-//                err_code = adv_report_parse(BLE_GAP_AD_TYPE_16BIT_SERVICE_UUID_COMPLETE,
-//                                            &adv_data,
-//                                            &type_data);
-//            }
+            if (err_code != NRF_SUCCESS) {
+                // Compare short local name in case complete name does not match.
+                err_code = adv_report_parse(BLE_GAP_AD_TYPE_16BIT_SERVICE_UUID_COMPLETE,
+                                            &adv_data,
+                                            &type_data);
+            }
 
             // Verify if short or complete name matches target.
-//            if (err_code == NRF_SUCCESS)
-//            {
-//                uint16_t extracted_uuid;
+            if (err_code == NRF_SUCCESS)
+            {
+                uint16_t extracted_uuid;
 
-//                // UUIDs found, look for matching UUID
-//                for (uint32_t u_index = 0; u_index < (type_data.data_len/UUID16_SIZE); u_index++)
-//                {
-//                    UUID16_EXTRACT(&extracted_uuid,&type_data.p_data[u_index * UUID16_SIZE]);
+                // UUIDs found, look for matching UUID
+                for (uint32_t u_index = 0; u_index < (type_data.data_len/UUID16_SIZE); u_index++)
+                {
+                    UUID16_EXTRACT(&extracted_uuid,&type_data.p_data[u_index * UUID16_SIZE]);
 
-//                    APPL_LOG_DEBUG("\t[APPL]: %x\r\n",extracted_uuid);
+                    APPL_LOG_DEBUG("\t[APPL]: %x\r\n",extracted_uuid);
 
-////                    if(extracted_uuid == TARGET_UUID)
-////                    {
-////                        // Stop scanning.
-////                        err_code = sd_ble_gap_scan_stop();
+                    if(extracted_uuid == TARGET_UUID)
+                    {
+                        // Stop scanning.
+                        err_code = sd_ble_gap_scan_stop();
 
-////                        if (err_code != NRF_SUCCESS)
-////                        {
-////                            APPL_LOG_DEBUG("[APPL]: Scan stop failed, reason %d\r\n", err_code);
-////                        }
-//////                        err_code = bsp_indication_set(BSP_INDICATE_IDLE);
-//////                        APP_ERROR_CHECK(err_code);
+                        if (err_code != NRF_SUCCESS)
+                        {
+                            APPL_LOG_DEBUG("[APPL]: Scan stop failed, reason %d\r\n", err_code);
+                        }
+//                        err_code = bsp_indication_set(BSP_INDICATE_IDLE);
+//                        APP_ERROR_CHECK(err_code);
 
-////                        m_scan_param.selective = 0; 
-////                        m_scan_param.p_whitelist = NULL;
+                        m_scan_param.selective = 0;
+                        m_scan_param.p_whitelist = NULL;
 
-////                        // Initiate connection.
-////                        err_code = sd_ble_gap_connect(&p_gap_evt->params.adv_report.peer_addr,
-////                                                      &m_scan_param,
-////                                                      &m_connection_param);
+                        // Initiate connection.
+                        err_code = sd_ble_gap_connect(&p_gap_evt->params.adv_report.peer_addr,
+                                                      &m_scan_param,
+                                                      &m_connection_param);
 
-////                        m_whitelist_temporarily_disabled = false;
+//                        m_whitelist_temporarily_disabled = false;
 
-////                        if (err_code != NRF_SUCCESS)
-////                        {
-////                            APPL_LOG_DEBUG("[APPL]: Connection Request Failed, reason %d\r\n", err_code);
-////                        }
-////                        break;
-////                    }
-//                }
-//            }
+                        if (err_code != NRF_SUCCESS)
+                        {
+                            APPL_LOG_DEBUG("[APPL]: Connection Request Failed, reason %d\r\n", err_code);
+                        }
+                        break;
+                    }
+                }
+            }
             break;
         }
 
@@ -665,6 +679,7 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
             break;
         case BLE_GAP_EVT_CONNECTED:
         {
+            APPL_LOG("[APPL]: BLE_GAP_EVT_CONNECTED\r\n");
             err_code = ble_hrs_c_handles_assign(&m_ble_hrs_c, p_gap_evt->conn_handle, NULL);
             APP_ERROR_CHECK(err_code);
             err_code = ble_bas_c_handles_assign(&m_ble_bas_c, p_gap_evt->conn_handle, NULL);
@@ -672,9 +687,16 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
             break;
         }
         case BLE_GAP_EVT_CONN_PARAM_UPDATE_REQUEST:
+            APPL_LOG("[APPL]: BLE_GAP_EVT_CONN_PARAM_UPDATE_REQUEST\r\n");
             // Accepting parameters requested by peer.
             err_code = sd_ble_gap_conn_param_update(p_gap_evt->conn_handle,
                                                     &p_gap_evt->params.conn_param_update_request.conn_params);
+            APP_ERROR_CHECK(err_code);
+            break;
+
+        case BLE_GAP_EVT_AUTH_KEY_REQUEST:
+            APPL_LOG("[APPL]: BLE_GAP_EVT_AUTH_KEY_REQUEST\r\n");
+        	err_code = sd_ble_gap_auth_key_reply(m_conn_handle, BLE_GAP_AUTH_KEY_TYPE_PASSKEY, passkey);
             APP_ERROR_CHECK(err_code);
             break;
 
@@ -846,33 +868,33 @@ static void device_manager_init(bool erase_bonds)
 
 /**@brief Heart Rate Collector Handler.
  */
-static void hrs_c_evt_handler(ble_hrs_c_t * p_hrs_c, ble_hrs_c_evt_t * p_hrs_c_evt)
-{
-    uint32_t err_code;
-
-    switch (p_hrs_c_evt->evt_type)
-    {
-        case BLE_HRS_C_EVT_DISCOVERY_COMPLETE:
-
-            // Heart rate service discovered. Enable notification of Heart Rate Measurement.
-            err_code = ble_hrs_c_hrm_notif_enable(p_hrs_c);
-            APP_ERROR_CHECK(err_code);
-
-            APPL_LOG_DEBUG("Heart rate service discovered \r\n");
-            break;
-
-        case BLE_HRS_C_EVT_HRM_NOTIFICATION:
-        {
-            APPL_LOG_DEBUG("[APPL]: HR Measurement received %d \r\n", p_hrs_c_evt->params.hrm.hr_value);
-
-            APPL_LOG("Heart Rate = %d\r\n", p_hrs_c_evt->params.hrm.hr_value);
-            break;
-        }
-
-        default:
-            break;
-    }
-}
+//static void hrs_c_evt_handler(ble_hrs_c_t * p_hrs_c, ble_hrs_c_evt_t * p_hrs_c_evt)
+//{
+//    uint32_t err_code;
+//
+//    switch (p_hrs_c_evt->evt_type)
+//    {
+//        case BLE_HRS_C_EVT_DISCOVERY_COMPLETE:
+//
+//            // Heart rate service discovered. Enable notification of Heart Rate Measurement.
+//            err_code = ble_hrs_c_hrm_notif_enable(p_hrs_c);
+//            APP_ERROR_CHECK(err_code);
+//
+//            APPL_LOG_DEBUG("Heart rate service discovered \r\n");
+//            break;
+//
+//        case BLE_HRS_C_EVT_HRM_NOTIFICATION:
+//        {
+//            APPL_LOG_DEBUG("[APPL]: HR Measurement received %d \r\n", p_hrs_c_evt->params.hrm.hr_value);
+//
+//            APPL_LOG("Heart Rate = %d\r\n", p_hrs_c_evt->params.hrm.hr_value);
+//            break;
+//        }
+//
+//        default:
+//            break;
+//    }
+//}
 
 
 /**@brief Battery levelCollector Handler.
@@ -924,15 +946,15 @@ static void bas_c_evt_handler(ble_bas_c_t * p_bas_c, ble_bas_c_evt_t * p_bas_c_e
 /**
  * @brief Heart rate collector initialization.
  */
-static void hrs_c_init(void)
-{
-    ble_hrs_c_init_t hrs_c_init_obj;
-
-    hrs_c_init_obj.evt_handler = hrs_c_evt_handler;
-
-    uint32_t err_code = ble_hrs_c_init(&m_ble_hrs_c, &hrs_c_init_obj);
-    APP_ERROR_CHECK(err_code);
-}
+//static void hrs_c_init(void)
+//{
+//    ble_hrs_c_init_t hrs_c_init_obj;
+//
+//    hrs_c_init_obj.evt_handler = hrs_c_evt_handler;
+//
+//    uint32_t err_code = ble_hrs_c_init(&m_ble_hrs_c, &hrs_c_init_obj);
+//    APP_ERROR_CHECK(err_code);
+//}
 
 
 /**
@@ -1005,7 +1027,7 @@ static void scan_set_params(uint8_t active, uint8_t selective, uint16_t interval
 
 /**@brief Function to start scanning.
  */
-static void scan_start(void)
+static uint32_t scan_start(void)
 {
 //    ble_gap_whitelist_t   whitelist;
 //    ble_gap_addr_t      * p_whitelist_addr[BLE_GAP_WHITELIST_ADDR_MAX_COUNT];
@@ -1021,7 +1043,7 @@ static void scan_start(void)
     if (count != 0)
     {
         m_memory_access_in_progress = true;
-        return;
+        return 0;
     }
 
     // Initialize whitelist parameters.
@@ -1058,18 +1080,21 @@ static void scan_start(void)
 //    }
 
     err_code = sd_ble_gap_scan_start(&m_scan_param);
-    APP_ERROR_CHECK(err_code);
+//    APP_ERROR_CHECK(err_code);
+
+    return err_code;
 }
 
 
 /**@brief Function to stop scanning.
  */
-static void scan_stop(void)
+static uint32_t scan_stop(void)
 {
-//    uint32_t err_code;
-//    err_code = sd_ble_gap_scan_stop();
+    uint32_t err_code;
+    err_code = sd_ble_gap_scan_stop();
 //    APP_ERROR_CHECK(err_code);
-    sd_ble_gap_scan_stop();
+
+	return err_code;
 }
 
 
@@ -1080,6 +1105,31 @@ static void scan_stop(void)
 static void gpio_init(void)
 {
     nrf_gpio_cfg_output(LED_1);
+    nrf_gpio_cfg_output(IF_SEL_PIN);	// TODO: Change to input when pin has been soldered
+    nrf_gpio_pin_clear(IF_SEL_PIN);
+}
+
+
+static void timer_timeout_handler(void * p_context)
+{
+    // Do nothing, only used for measuring time
+}
+
+
+/**
+ *
+ */
+static void timer_init(void)
+{
+	uint32_t err_code;
+
+	APP_TIMER_INIT(APP_TIMER_PRESCALER, APP_TIMER_OP_QUEUE_SIZE, NULL);
+
+	err_code = app_timer_create(&m_timer_id, APP_TIMER_MODE_REPEATED, timer_timeout_handler);
+	APP_ERROR_CHECK(err_code);
+
+	err_code = app_timer_start(m_timer_id, APP_TIMER_TICKS(60000, APP_TIMER_PRESCALER), NULL);
+	APP_ERROR_CHECK(err_code);
 }
 
 
@@ -1135,16 +1185,16 @@ static uint32_t add_device_to_list(ble_gap_addr_t addr)
     }
 
     // Debug print of device list
-    for (int i=0; i < MAX_NBR_DEVICES; i++) {
-        APPL_LOG("[APPL]: *** Device #%02d ***\r\n", i);
-        APPL_LOG("[APPL]: Address: %02X:", m_device_list[i].peer_addr.addr[5]);
-        APPL_LOG("%02X:", m_device_list[i].peer_addr.addr[4]);
-        APPL_LOG("%02X:", m_device_list[i].peer_addr.addr[3]);
-        APPL_LOG("%02X:", m_device_list[i].peer_addr.addr[2]);
-        APPL_LOG("%02X:", m_device_list[i].peer_addr.addr[1]);
-        APPL_LOG("%02X\r\n", m_device_list[i].peer_addr.addr[0]);
-        APPL_LOG("[APPL]: Address type: %d\r\n", m_device_list[i].peer_addr.addr_type);
-    }
+//    for (int i=0; i < MAX_NBR_DEVICES; i++) {
+//        APPL_LOG("[APPL]: *** Device #%02d ***\r\n", i);
+//        APPL_LOG("[APPL]: Address: %02X:", m_device_list[i].peer_addr.addr[5]);
+//        APPL_LOG("%02X:", m_device_list[i].peer_addr.addr[4]);
+//        APPL_LOG("%02X:", m_device_list[i].peer_addr.addr[3]);
+//        APPL_LOG("%02X:", m_device_list[i].peer_addr.addr[2]);
+//        APPL_LOG("%02X:", m_device_list[i].peer_addr.addr[1]);
+//        APPL_LOG("%02X\r\n", m_device_list[i].peer_addr.addr[0]);
+//        APPL_LOG("[APPL]: Address type: %d\r\n", m_device_list[i].peer_addr.addr_type);
+//    }
     
     return 0;
 }
@@ -1229,10 +1279,11 @@ static void uart_rx_command_handler(uint8_t *rx, uint8_t rx_len)
 				memset(m_device_list, 0, sizeof(m_device_list));
         if (true) {
             uart_write_str((uint8_t *)"OK\r\n", strlen("OK\r\n"));
+            APPL_LOG("[APPL]: Response OK sent\r\n");
         } else {
             uart_write_str((uint8_t *)"ERROR\r\n", strlen("ERROR\r\n"));
+            APPL_LOG("[APPL]: Response ERROR sent\r\n");
         }
-        APPL_LOG("[APPL]: Response sent\r\n");
         
     } else if (strcmp((char *)rx, "AT+INFO?") == 0) {
         // TODO: Implement command
@@ -1245,9 +1296,8 @@ static void uart_rx_command_handler(uint8_t *rx, uint8_t rx_len)
         APPL_LOG("[APPL]: Response sent\r\n");
         
     } else if (strcmp((char *)rx, "AT+SCANSTART") == 0) {
-        scan_start();
-        // TODO: Check if scan started OK?
-        if (true) {
+        err_code = scan_start();
+        if (err_code == 0) {
             uart_write_str((uint8_t *)"OK\r\n", strlen("OK\r\n"));
         } else {
             uart_write_str((uint8_t *)"ERROR\r\n", strlen("ERROR\r\n"));
@@ -1255,9 +1305,8 @@ static void uart_rx_command_handler(uint8_t *rx, uint8_t rx_len)
         APPL_LOG("[APPL]: Response sent\r\n");
         
     } else if (strcmp((char *)rx, "AT+SCANSTOP") == 0) {
-        scan_stop();
-        // TODO: Check if scan stopped OK?
-        if (true) {
+        err_code = scan_stop();
+        if (err_code == 0) {
             uart_write_str((uint8_t *)"OK\r\n", strlen("OK\r\n"));
         } else {
             uart_write_str((uint8_t *)"ERROR\r\n", strlen("ERROR\r\n"));
@@ -1266,32 +1315,41 @@ static void uart_rx_command_handler(uint8_t *rx, uint8_t rx_len)
         
     } else if (strncmp((char *)rx, "AT+SCANSETP", strlen("AT+SCANSETP")) == 0) {
         uint8_t command[12];
-        uint8_t active, selective;
-        uint16_t interval, window, timeout;
-        uint8_t nbr_of_variables = sscanf((char *)rx, "%11c=%hhd,%hhd,%hd,%hd,%hd", command, &active, &selective, &interval, &window, &timeout);
+//        uint8_t active, selective;
+//        uint16_t interval, window, timeout;
+        int active, selective, interval, window, timeout;
+        uint8_t nbr_of_variables = sscanf((char *)rx, "%11c=%d,%d,%d,%d,%d", command, &active, &selective, &interval, &window, &timeout);
         if (nbr_of_variables == 6) {
             scan_set_params(active, selective, interval, window, timeout);
             uart_write_str((uint8_t *)"OK\r\n", strlen("OK\r\n"));
+            APPL_LOG("[APPL]: Response OK sent\r\n");
         } else {
             uart_write_str((uint8_t *)"ERROR\r\n", strlen("ERROR\r\n"));
+            APPL_LOG("[APPL]: Response ERROR sent, nbr_of_variables=%d, expected 6\r\n");
         }
-        APPL_LOG("[APPL]: Response sent\r\n");
         
     } else if (strncmp((char *)rx, "AT+DEVADD", strlen("AT+DEVADD")) == 0) {
         uint8_t command[10];
+        unsigned int temp_addr[6];
         ble_gap_addr_t a;
-        uint8_t nbr_of_variables = sscanf((char *)rx, "%9c=%hhx:%hhx:%hhx:%hhx:%hhx:%hhx", command, &a.addr[5], &a.addr[4], &a.addr[3], &a.addr[2], &a.addr[1], &a.addr[0]);
+//        uint8_t nbr_of_variables = sscanf((char *)rx, "%9c=%x:%hhx:%hhx:%hhx:%hhx:%hhx", command, &a.addr[5], &a.addr[4], &a.addr[3], &a.addr[2], &a.addr[1], &a.addr[0]);
+        uint8_t nbr_of_variables = sscanf((char *)rx, "%9c=%x:%x:%x:%x:%x:%x", command, &temp_addr[5], &temp_addr[4], &temp_addr[3], &temp_addr[2], &temp_addr[1], &temp_addr[0]);
+        for (uint8_t i = 0; i < 6; i++) {
+        	a.addr[i] = temp_addr[i];
+        }
         if (nbr_of_variables == 7) {
             err_code = add_device_to_list(a);
             if (err_code == 0) {
                 uart_write_str((uint8_t *)"OK\r\n", strlen("OK\r\n"));
+                APPL_LOG("[APPL]: Response OK sent\r\n");
             } else {
                 uart_write_str((uint8_t *)"ERROR\r\n", strlen("ERROR\r\n"));
+                APPL_LOG("[APPL]: Response ERROR sent\r\n");
             }
         } else {
             uart_write_str((uint8_t *)"ERROR\r\n", strlen("ERROR\r\n"));
+            APPL_LOG("[APPL]: Response ERROR sent, nbr_of_variables received=%d, expected 7.\r\n", nbr_of_variables);
         }
-        APPL_LOG("[APPL]: Response sent\r\n");
         
     } else if (strncmp((char *)rx, "AT+DEVLIST", strlen("AT+DEVLIST")) == 0) {
         uint8_t command[11];
@@ -1409,8 +1467,8 @@ static void uart_init(void)
         UART_CTS_PIN_NUMBER,
         APP_UART_FLOW_CONTROL_DISABLED,
         false,
-        UART_BAUDRATE_BAUDRATE_Baud460800
-//        UART_BAUDRATE_BAUDRATE_Baud115200
+//        UART_BAUDRATE_BAUDRATE_Baud460800
+        UART_BAUDRATE_BAUDRATE_Baud115200
     };
 
     APP_UART_FIFO_INIT(&comm_params,
@@ -1513,8 +1571,8 @@ static void uart_init(void)
 //}
 
 
-//static void spi_slave_handler(nrf_drv_spis_event_t event)
-//{
+static void spi_slave_handler(nrf_drv_spis_event_t event)
+{
 //    uint32_t err_code;
 //    uint8_t tx_len = 0;
 //    
@@ -1557,7 +1615,7 @@ static void uart_init(void)
 //            APPL_LOG("[APPL]: spi_slave_handler: NRF_DRV_SPIS_EVT_TYPE_MAX - Should never happen\r\n");
 //            break;
 //    }
-//}
+}
 
 
 /**@brief Function for initializing the SPI slave module.
@@ -1586,9 +1644,38 @@ static void uart_init(void)
 //}
 
 
-static void timer_timeout_handler(void * p_context)
+/**
+ *
+ */
+static void hw_if_init(void)
 {
-    // Do nothing
+	uint32_t err_code;
+
+	if (nrf_gpio_pin_read(IF_SEL_PIN) == 0) {
+		m_hw_if = HW_IF_UART;
+		uart_init();
+	} else if (nrf_gpio_pin_read(IF_SEL_PIN) == 1) {
+		m_hw_if = HW_IF_SPI;
+		nrf_drv_spis_config_t config = NRF_DRV_SPIS_DEFAULT_CONFIG(1);
+		////    config.mode      = NRF_DRV_SPIS_MODE_0;
+		////    config.bit_order = NRF_DRV_SPIS_BIT_ORDER_MSB_FIRST;
+		config.csn_pin = 9;
+		err_code = nrf_drv_spis_init(&m_spi_slave_1, &config, spi_slave_handler);
+		if (err_code != NRF_SUCCESS)
+		{
+		    // Initialization failed. Take recovery action.
+		}
+
+		err_code = nrf_drv_spis_buffers_set(&m_spi_slave_1,
+		                                   (uint8_t*) m_slave_tx_buffer, sizeof(m_slave_tx_buffer),
+		                                   (uint8_t*) m_slave_rx_buffer, sizeof(m_slave_rx_buffer));
+		if (err_code != NRF_SUCCESS)
+		{
+		    // Buffer setup failed. Take recovery action.
+		}
+	} else {
+        APPL_LOG("No hardware interface defined\r\n");
+    }
 }
 
 
@@ -1610,6 +1697,16 @@ static void radio_notification_init()
 }
 
 
+//static void send_boot_finished_message()
+//{
+//	if (m_hw_if == HW_IF_UART) {
+//        uart_write_str((uint8_t *)"B\r\n", strlen("B\r\n"));
+//	} else if (m_hw_if == HW_IF_SPI) {
+//
+//	}
+//}
+
+
 /** @brief Function for the Power manager.
  */
 static void power_manage(void)
@@ -1621,34 +1718,37 @@ static void power_manage(void)
 
 int main(void)
 {
-    uint32_t err_code;
+//    uint32_t err_code;
     bool erase_bonds = false;
 
     // Initialize.
     gpio_init();
     nrf_gpio_pin_set(LED_1);
-    APP_TIMER_INIT(APP_TIMER_PRESCALER, APP_TIMER_OP_QUEUE_SIZE, NULL);
-    err_code = app_timer_create(&m_timer_id, APP_TIMER_MODE_REPEATED, timer_timeout_handler);
-    APP_ERROR_CHECK(err_code);
-    err_code = app_timer_start(m_timer_id, APP_TIMER_TICKS(60000, APP_TIMER_PRESCALER), NULL);
-    APP_ERROR_CHECK(err_code);
-//    buttons_leds_init(&erase_bonds);
+    timer_init();
     nrf_log_init();
-    uart_init();
-//    spis_init();
-    APPL_LOG("Heart rate collector example\r\n");
+    hw_if_init();
+    APPL_LOG("*** HomeHub ***\r\n");
     ble_stack_init();
     device_manager_init(erase_bonds);
     db_discovery_init();
-    hrs_c_init();
+//    hrs_c_init();
     bas_c_init();
     radio_notification_init();
+//    send_boot_finished_message();
     nrf_gpio_pin_clear(LED_1);
 
     // Start scanning for peripherals and initiate connection
     // with devices that advertise Heart Rate UUID.
     scan_set_default_params();
     //scan_start();
+    ble_gap_addr_t ess_test_addr;
+    ess_test_addr.addr[5] = 0x00;
+    ess_test_addr.addr[4] = 0x00;
+    ess_test_addr.addr[3] = 0x00;
+    ess_test_addr.addr[2] = 0x00;
+    ess_test_addr.addr[1] = 0x00;
+    ess_test_addr.addr[0] = 0x00;
+    add_device_to_list(ess_test_addr);
 
     for (;; )
     {

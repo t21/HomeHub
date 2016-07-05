@@ -353,8 +353,8 @@ void initBle()
   
     // Initialize the BLE module
     Serial.println("Initializing BLE-module ...");
-//    Serial1.begin(115200);
-    Serial1.begin(460800);
+    Serial1.begin(115200);
+//    Serial1.begin(460800);
 
     #ifdef USE_BLE_HW_HANDSHAKE
         digitalWrite(UART_RTS_PIN, HIGH);

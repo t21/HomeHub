@@ -52,6 +52,7 @@ $(abspath ../../nRF5_SDK_11.0.0_89a8197/components/drivers_nrf/delay/nrf_delay.c
 $(abspath ../../nRF5_SDK_11.0.0_89a8197/components/drivers_nrf/common/nrf_drv_common.c) \
 $(abspath ../../nRF5_SDK_11.0.0_89a8197/components/drivers_nrf/gpiote/nrf_drv_gpiote.c) \
 $(abspath ../../nRF5_SDK_11.0.0_89a8197/components/drivers_nrf/uart/nrf_drv_uart.c) \
+$(abspath ../../nRF5_SDK_11.0.0_89a8197/components/drivers_nrf/spi_slave/nrf_drv_spis.c) \
 $(abspath ../../nRF5_SDK_11.0.0_89a8197/components/drivers_nrf/pstorage/pstorage.c) \
 $(abspath ../../nRF5_SDK_11.0.0_89a8197/examples/bsp/bsp.c) \
 $(abspath ../../nRF5_SDK_11.0.0_89a8197/examples/bsp/bsp_btn_ble.c) \
@@ -75,7 +76,6 @@ ASM_SOURCE_FILES  = $(abspath ../../nRF5_SDK_11.0.0_89a8197/components/toolchain
 
 #includes common to all targets
 INC_PATHS  = -I$(abspath ../)
-INC_PATHS += -I$(abspath ../config/ble_app_hrs_c_s130_pca10028)
 INC_PATHS += -I$(abspath ../config)
 INC_PATHS += -I$(abspath ../../nRF5_SDK_11.0.0_89a8197/components/ble/ble_services/ble_hrs_c)
 INC_PATHS += -I$(abspath ../../nRF5_SDK_11.0.0_89a8197/components/drivers_nrf/config)
@@ -123,9 +123,10 @@ CFLAGS += -D__HEAP_SIZE=0
 CFLAGS += -DS130
 CFLAGS += -DBLE_STACK_SUPPORT_REQD
 CFLAGS += -DSWI_DISABLE0
+CFLAGS += -DENABLE_DEBUG_LOG_SUPPORT
 CFLAGS += -mcpu=cortex-m0
 CFLAGS += -mthumb -mabi=aapcs --std=gnu99
-CFLAGS += -Wall -Werror -O3 -g3
+CFLAGS += -Wall -Werror -O0 -g3
 CFLAGS += -mfloat-abi=soft
 # keep every function in separate section. This will allow linker to dump unused functions
 CFLAGS += -ffunction-sections -fdata-sections -fno-strict-aliasing
@@ -179,7 +180,7 @@ vpath %.s $(ASM_PATHS)
 OBJECTS = $(C_OBJECTS) $(ASM_OBJECTS)
 
 nrf51422_xxac_s130: OUTPUT_FILENAME := nrf51422_xxac_s130
-nrf51422_xxac_s130: LINKER_SCRIPT=ble_app_homehub_c_gcc_nrf51_AC.ld
+nrf51422_xxac_s130: LINKER_SCRIPT=ble_app_homehub_c_gcc_nrf51_AA.ld
 
 nrf51422_xxac_s130: $(BUILD_DIRECTORIES) $(OBJECTS)
 	@echo Linking target: $(OUTPUT_FILENAME).out
