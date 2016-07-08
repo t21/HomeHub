@@ -303,7 +303,7 @@ void setupBleDevices()
                                  0                              // Sensor ID for ThingSpeak Field #8
                                  );
                                  
-    bleDeviceList[1] = BleDevice(BluetoothDeviceAddress(0xD8,0xB4,0xDA,0x9E,0x72,0x9D),
+    bleDeviceList[1] = BleDevice(BluetoothDeviceAddress(0xCB,0x3C,0x6A,0x2B,0xFF,0x47),
                                  BD_OP_MODE_ADV,            // BLE operating mode
                                  123989,                    // ThingSpeak channel number
                                  "6YEZIFV5NCUHOS6B",        // ThingSpeak write API Key
