@@ -6,9 +6,9 @@
 
 | AT-command | Description | Response(s) |
 |------------|-------------|-------------|
-| `AT`         | Command that can be used to check if the communication link is working. | OK |
-| ATZ        | Command that resets the BLE-module | OK |
-| AT+INFO?   | Command that returns information of the BLE-module. | +INFO: HW:2.1, FW:xx, SD:yy, OK |
+| `AT`       | Command that can be used to check if the communication link is working. | `OK` |
+| `ATZ`      | Command that resets the BLE-module | `OK` |
+| `AT+INFO?` | Command that returns information of the BLE-module. | `+INFO: HW:2.1, FW:xx, SD:yy, OK` |
 
 
 #### Scan commands
