@@ -17,7 +17,7 @@
 |------------|-------------|-------------|
 | `AT+SCANSTART` | Command that starts the scanning for registered devices. | `+SCANSTART: OK` <BR> scanning was successfully started. <BR><BR> `+SCANSTART: ERROR` <BR> scanning was NOT successfully started. |
 | AT+SCANSTOP | Command that stops the scanning for devices. | +SCANSTOP: OK - scanning was successfully stopped. <BR> +SCANSTOP: ERROR - scanning was NOT successfully stopped. |
-| `AT+SCANSETP=&lt;active>,&lt;selective>,&lt;interval>,&lt;window>,&lt;timeout>` | Command that sets the scan parameters. <BR> &lt;active> - '0' no scan response, '1' request scan response <BR> &lt;selective - '0' scan for all devices, '1' only scan for whitelisted devices <BR> &lt;interval> - scan interval between 0x0004 and 0x4000 in 0.625ms units (2.5ms to 10.24s) <BR> &lt;window> - Scan window between 0x0004 and 0x4000 in 0.625ms units (2.5ms to 10.24s) <BR> &lt;timeout> -  Scan timeout between 0x0001 and 0xFFFF in seconds, 0x0000 disables timeout | +SCANSETP: OK <BR> +SCANSETP: ERROR |
+| `AT+SCANSETP=<active>,<selective>,<interval>,<window>,<timeout>` | Command that sets the scan parameters. <BR> &lt;active> - '0' no scan response, '1' request scan response <BR> &lt;selective - '0' scan for all devices, '1' only scan for whitelisted devices <BR> &lt;interval> - scan interval between 0x0004 and 0x4000 in 0.625ms units (2.5ms to 10.24s) <BR> &lt;window> - Scan window between 0x0004 and 0x4000 in 0.625ms units (2.5ms to 10.24s) <BR> &lt;timeout> -  Scan timeout between 0x0001 and 0xFFFF in seconds, 0x0000 disables timeout | +SCANSETP: OK <BR> +SCANSETP: ERROR |
 
 
 #### Device handling commands
