@@ -1,5 +1,10 @@
 # HomeHub
 
+Test
+- [] Hejsan
+- [] Två
+End test
+
 ### Command set
 
 #### General commands
