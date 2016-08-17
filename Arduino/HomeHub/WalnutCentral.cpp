@@ -1,6 +1,6 @@
 #include "WalnutCentral.h"
 
-//#define PRINT_DEBUG_MESSAGES
+#define PRINT_DEBUG_MESSAGES
 
 #define MAX_BUF_SIZE 100
 #define UART_TIMEOUT 1000
@@ -18,17 +18,60 @@ int WalnutCentral::begin(Stream &serial, const int rstPin) {
     digitalWrite(rstPin, 0);
     delay(100);
     digitalWrite(rstPin, 1);
+    
     // Wait for boot finished
     delay(1000);
     // TODO: Implement command or character to be received when booting up
-
-    // Send ATZ
+    unsigned long startTime = millis();
+//    bool timedOut = false;
+//    const int RX_BUF_SIZE = 10;
+//    char rx[MAX_BUF_SIZE] = {0};
+//    int rx_len = 0;
+//    uint8_t i = 0;
     char tx[MAX_BUF_SIZE];
     char rx[MAX_BUF_SIZE];
     int rx_len = 0;
-  
+    int err_code;
+
+////    while (!_serial->available()) {
+//    while (digitalRead(13) == 0) {
+//        if (millis() - startTime > 30000) {
+////            timedOut = true;
+//            return 1;
+//        }
+//    }
+//        
+//    while (!_serial->available()) {
+//        if (millis() - startTime > 30000) {
+////            timedOut = true;
+//            return 1;
+//        }
+//    }
+//    int err_code = receiveString(rx, &rx_len);
+//    if (err_code != 0) {
+//        return err_code;
+//    }
+////    _serial->setTimeout(1000);
+////    rx_len = _serial->readBytesUntil('\n', rx, MAX_BUF_SIZE);
+////    if (rx_len > 1) {
+////        rx[rx_len-1] = 0;
+////        rx_len -= 1;
+////    }
+//
+//    #ifdef PRINT_DEBUG_MESSAGES
+//        Serial.print("receiveString: -");
+//        Serial.print(rx);
+//        Serial.print("- nbrOfBytes: ");
+//        Serial.println(rx_len);
+//    #endif
+//  
+//    if ((rx_len == 0) || (strcmp(rx, "B") != 0)) {
+//        // Timeout
+//        return 1; 
+//    }
+//
     strcpy(tx, "ATZ");
-    int err_code = sendString(tx, strlen(tx));
+    err_code = sendString(tx, strlen(tx));
     if (err_code != 0) {
         return err_code;
     }
@@ -98,6 +141,7 @@ int WalnutCentral::setScanParameters() {
     int rx_len = 0;
   
     strcpy(tx, "AT+SCANSETP=1,0,1760,1680,0");
+//    strcpy(tx, "AT+SCANSETP=1,0,A0,50,0");
     int err_code = sendString(tx, strlen(tx));
     if (err_code != 0) {
         return err_code;
@@ -188,12 +232,12 @@ int WalnutCentral::sendString(char *tx, int tx_len)
         _serial->print(tx[i]);
         nbr_of_bytes_sent++;
         #ifndef USE_BLE_HW_HANDSHAKE
-            delayMicroseconds(50);      // 45us failed @ 460kbit/s, 46us passes @ 460kbit/s
+            delayMicroseconds(70);      // 45us failed @ 460kbit/s, 46us passes @ 460kbit/s
         #endif
     }
     _serial->print('\r');
     nbr_of_bytes_sent++;
-    delayMicroseconds(50);
+    delayMicroseconds(70);
     _serial->print('\n');
     nbr_of_bytes_sent++;
   
