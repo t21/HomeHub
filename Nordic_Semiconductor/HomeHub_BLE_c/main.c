@@ -40,6 +40,7 @@
 #include "nrf_drv_spis.h"
 #include "ble_radio_notification.h"
 #include "nrf_delay.h"
+#include "app_fifo.h"
 
 #define CENTRAL_LINK_COUNT         1                                  /**< Number of central links used by the application. When changing this number remember to adjust the RAM settings*/
 #define PERIPHERAL_LINK_COUNT      0                                  /**< Number of peripheral links used by the application. When changing this number remember to adjust the RAM settings*/
@@ -150,7 +151,7 @@ typedef enum {
     BD_OP_MODE_AIO
 } ble_op_mode_t;
 
-#define MAX_NBR_DEVICES 10
+#define MAX_NBR_DEVICES 50
 typedef struct {
     ble_gap_addr_t  peer_addr;
     ble_op_mode_t   op_mode;
@@ -166,6 +167,10 @@ static device_t m_device_list[MAX_NBR_DEVICES];
 static const nrf_drv_spis_t m_spi_slave_1 = NRF_DRV_SPIS_INSTANCE(1);
 static volatile uint8_t m_slave_tx_buffer[50];
 static volatile uint8_t m_slave_rx_buffer[50];
+
+#define MAX_TX_BUFFER_SIZE 1024
+static uint8_t m_tx_buffer[MAX_TX_BUFFER_SIZE];
+static app_fifo_t m_fifo;
 
 APP_TIMER_DEF(m_timer_id);
 
@@ -185,6 +190,7 @@ static uint32_t uart_write_str(uint8_t *str, uint8_t len);
 
 #define STATIC_PASSKEY              "123456"                                    /**< Static pin. */
 static uint8_t                             passkey[] = STATIC_PASSKEY;
+
 
 
 /**@brief Function for asserts in the SoftDevice.
@@ -489,6 +495,52 @@ void get_battery(uint8_t device_index, uint8_t *battery_level)
 }
 
 
+static void tx_buffer_write(ble_gap_evt_adv_report_t adv_report)
+{
+    char tx_str[100] = { 0 };
+    uint32_t tx_str_len;
+
+    sprintf(tx_str, "%02x,%02x,%02x,%02x,%02x,%02x:%02x:%02x:%02x:%02x",
+    		(uint8_t)adv_report.peer_addr.addr[5],
+			(uint8_t)adv_report.peer_addr.addr[4],
+			(uint8_t)adv_report.peer_addr.addr[3],
+			(uint8_t)adv_report.peer_addr.addr[2],
+			(uint8_t)adv_report.peer_addr.addr[1],
+			(uint8_t)adv_report.peer_addr.addr[0],
+			(uint8_t)adv_report.rssi,
+			(uint8_t)adv_report.type,
+			(uint8_t)adv_report.scan_rsp,
+			(uint8_t)adv_report.dlen
+			);
+    char data_str[3] = { 0 };
+    for (int i = 0; i < adv_report.dlen; i++) {
+    	sprintf(data_str, "%02x", (uint8_t)adv_report.data[i]);
+    	strcat(tx_str, data_str);
+    }
+    strcat(tx_str, "|");
+    tx_str_len = strlen(tx_str);
+    APPL_LOG("[APPL]: %s\r\n", tx_str);
+
+    uint32_t fifo_free_size;
+    uint32_t err_code = app_fifo_write(&m_fifo, NULL, &fifo_free_size);
+
+    if ((err_code != NRF_ERROR_NO_MEM) && (fifo_free_size >= tx_str_len)) {
+    	// Write tx_str to FIFO
+        //uart_write_str((uint8_t *)tx_str, strlen(tx_str));
+        app_fifo_write(&m_fifo, (uint8_t *)tx_str, &tx_str_len);
+        uart_write_str((uint8_t *)"!\r\n", strlen("!\r\n"));
+    } else {
+        //uart_write_str((uint8_t *)"Fifo full\r\n", strlen("Fifo full\r\n"));
+    }
+
+//    char tx_str[3] = "!";
+//    strcat(tx_str, "\r\n");
+//    APPL_LOG("[APPL]: %s\r\n", tx_str);
+//    uart_write_str((uint8_t *)tx_str, strlen(tx_str));
+
+}
+
+
 /**@brief Function for handling the Application's BLE Stack events.
  *
  * @param[in]   p_ble_evt   Bluetooth stack event.
@@ -498,116 +550,117 @@ static void on_ble_evt(ble_evt_t * p_ble_evt)
     uint32_t                err_code;
     const ble_gap_evt_t   * p_gap_evt = &p_ble_evt->evt.gap_evt;
     //int8_t index = -1;
-    uint8_t device_index = 0;
-    uint32_t time_now;
-    uint32_t time_diff;
+//    uint8_t device_index = 0;
+//    uint32_t time_now;
+//    uint32_t time_diff;
 
     switch (p_ble_evt->header.evt_id)
     {
         case BLE_GAP_EVT_ADV_REPORT:
         {
+        	// Advertising event has been received
+
+            ble_gap_evt_adv_report_t adv_report;
+            adv_report = p_gap_evt->params.adv_report;
+
+            // Check if advertising from device in device list
+            for (int i = 0; i < MAX_NBR_DEVICES; i++) {
+                if ((adv_report.peer_addr.addr[0] == m_device_list[i].peer_addr.addr[0]) &&
+                    (adv_report.peer_addr.addr[1] == m_device_list[i].peer_addr.addr[1]) &&
+                    (adv_report.peer_addr.addr[2] == m_device_list[i].peer_addr.addr[2]) &&
+                    (adv_report.peer_addr.addr[3] == m_device_list[i].peer_addr.addr[3]) &&
+                    (adv_report.peer_addr.addr[4] == m_device_list[i].peer_addr.addr[4]) &&
+                    (adv_report.peer_addr.addr[5] == m_device_list[i].peer_addr.addr[5]))
+                {
+                    //device_adv_print(p_gap_evt->params.adv_report);
+                    tx_buffer_write(adv_report);
+                    break;
+                }
+            }
+
+//            if (device_found) {
+////                APPL_LOG("[APPL]: Device found: %d\r\n", device_index);
+//
+//                // Store advertising data for device in device list
+//                if (p_gap_evt->params.adv_report.scan_rsp == 0) {
+//                    for (int i = 0; i < adv_data.data_len; i++) {
+//                        m_device_list[device_index].adv_data[i] = adv_data.p_data[i];
+//                    }
+//                    m_device_list[device_index].adv_data_len = adv_data.data_len;
+//                } else {
+//                    for (int i = 0; i < adv_data.data_len; i++) {
+//                        m_device_list[device_index].scan_resp[i] = adv_data.p_data[i];
+//                    }
+//                    m_device_list[device_index].scan_resp_len = adv_data.data_len;
+//                }
+//
+//                err_code = app_timer_cnt_get(&time_now);
+//                APP_ERROR_CHECK(err_code);
+////                APPL_LOG("[APPL]: Last seen: %d\r\n", m_device_list[device_index].time_last_seen);
+////                APPL_LOG("[APPL]: Time Now: %d\r\n", time_now);
+//                err_code = app_timer_cnt_diff_compute(time_now, m_device_list[device_index].time_last_seen, &time_diff);
+//
+//                if (time_diff > (60 * 32768)) {
+//                    m_device_list[device_index].time_last_seen = time_now;
+//
+//                    uint8_t var = 2;
+//                    if (var == 0) {
+//                    if ((m_device_list[device_index].adv_data_len > 0) && (m_device_list[device_index].scan_resp_len > 0)) {
+//                        char adv_str[150] = {0};
+//                        char tempStr[10] = {0};
+//
+//                        sprintf(adv_str, "+ADV:%02d,%02X,", device_index, (m_device_list[device_index].adv_data_len+m_device_list[device_index].scan_resp_len));
+//                        for (int i = 0; i < m_device_list[device_index].adv_data_len; i++) {
+//                            sprintf(tempStr, "%02X", m_device_list[device_index].adv_data[i]);
+//                            strcat(adv_str, tempStr);
+//                        }
+//                        for (int i = 0; i < m_device_list[device_index].scan_resp_len; i++) {
+//                            sprintf(tempStr, "%02X", m_device_list[device_index].scan_resp[i]);
+//                            strcat(adv_str, tempStr);
+//                        }
+//                        strcat(adv_str, "\r\n");
+//                        APPL_LOG("[APPL]: %s\r\n", adv_str);
+//                        uart_write_str((uint8_t *)adv_str, strlen(adv_str));
+//                    }
+//                    }
+//                    if (var == 1) {
+//                    if ((m_device_list[device_index].adv_data_len > 0) && (m_device_list[device_index].scan_resp_len > 0)) {
+//                        char adv_str[150] = {0};
+//
+//                        sprintf(adv_str, "+ADV:%02d", device_index);
+//                        strcat(adv_str, "\r\n");
+//                        APPL_LOG("[APPL]: %s\r\n", adv_str);
+//                        uart_write_str((uint8_t *)adv_str, strlen(adv_str));
+//                    }
+//                    }
+//                    if (var == 2) {
+//                    if ((m_device_list[device_index].adv_data_len > 0) && (m_device_list[device_index].scan_resp_len > 0)) {
+//                        char adv_str[150] = {0};
+//                        char tempStr[10] = {0};
+//
+//                        uint8_t battery_level;
+//
+//                        get_battery(device_index, &battery_level);
+//                        uint8_t sensor_data_len = m_device_list[device_index].scan_resp_len - 4;
+//                        sprintf(adv_str, "+ADV:%02d,%02X,%02X,", device_index, sensor_data_len, battery_level);
+//                        for (int i = 4; i < m_device_list[device_index].scan_resp_len; i++) {
+//                            sprintf(tempStr, "%02X", m_device_list[device_index].scan_resp[i]);
+//                            strcat(adv_str, tempStr);
+//                        }
+//                        strcat(adv_str, "\r\n");
+//                        APPL_LOG("[APPL]: %s\r\n", adv_str);
+//                        uart_write_str((uint8_t *)adv_str, strlen(adv_str));
+//                    }
+//                    }
+//                }
+//            }
+
             data_t adv_data;
             data_t type_data;
-            
+
             // Initialize advertisement report for parsing.
             adv_data.p_data = (uint8_t *)p_gap_evt->params.adv_report.data;
             adv_data.data_len = p_gap_evt->params.adv_report.dlen;
-
-//            device_adv_print(p_gap_evt->params.adv_report);
-            
-            bool device_found = false;
-            
-            // Check if sdvertising from device in device list
-            for (int i = 0; i < MAX_NBR_DEVICES; i++) {
-                if ((p_gap_evt->params.adv_report.peer_addr.addr[0] == m_device_list[i].peer_addr.addr[0]) &&
-                    (p_gap_evt->params.adv_report.peer_addr.addr[1] == m_device_list[i].peer_addr.addr[1]) &&
-                    (p_gap_evt->params.adv_report.peer_addr.addr[2] == m_device_list[i].peer_addr.addr[2]) &&
-                    (p_gap_evt->params.adv_report.peer_addr.addr[3] == m_device_list[i].peer_addr.addr[3]) &&
-                    (p_gap_evt->params.adv_report.peer_addr.addr[4] == m_device_list[i].peer_addr.addr[4]) &&
-                    (p_gap_evt->params.adv_report.peer_addr.addr[5] == m_device_list[i].peer_addr.addr[5]))
-                {
-                        device_found = true;
-                        device_index = i;
-                        break;
-                }
-            }
-            
-            if (device_found) {
-//                APPL_LOG("[APPL]: Device found: %d\r\n", device_index);
-                
-                // Store advertising data for device in device list
-                if (p_gap_evt->params.adv_report.scan_rsp == 0) {
-                    for (int i = 0; i < adv_data.data_len; i++) {
-                        m_device_list[device_index].adv_data[i] = adv_data.p_data[i];
-                    }
-                    m_device_list[device_index].adv_data_len = adv_data.data_len;
-                } else {
-                    for (int i = 0; i < adv_data.data_len; i++) {
-                        m_device_list[device_index].scan_resp[i] = adv_data.p_data[i];
-                    }
-                    m_device_list[device_index].scan_resp_len = adv_data.data_len;
-                }
-                
-                err_code = app_timer_cnt_get(&time_now);
-                APP_ERROR_CHECK(err_code);
-//                APPL_LOG("[APPL]: Last seen: %d\r\n", m_device_list[device_index].time_last_seen);
-//                APPL_LOG("[APPL]: Time Now: %d\r\n", time_now);
-                err_code = app_timer_cnt_diff_compute(time_now, m_device_list[device_index].time_last_seen, &time_diff);
-                
-                if (time_diff > (60 * 32768)) {
-                    m_device_list[device_index].time_last_seen = time_now;
-                    
-                    uint8_t var = 2;
-                    if (var == 0) {
-                    if ((m_device_list[device_index].adv_data_len > 0) && (m_device_list[device_index].scan_resp_len > 0)) {
-                        char adv_str[150] = {0};
-                        char tempStr[10] = {0};
-                        
-                        sprintf(adv_str, "+ADV:%02d,%02X,", device_index, (m_device_list[device_index].adv_data_len+m_device_list[device_index].scan_resp_len));
-                        for (int i = 0; i < m_device_list[device_index].adv_data_len; i++) {
-                            sprintf(tempStr, "%02X", m_device_list[device_index].adv_data[i]);
-                            strcat(adv_str, tempStr);
-                        }
-                        for (int i = 0; i < m_device_list[device_index].scan_resp_len; i++) {
-                            sprintf(tempStr, "%02X", m_device_list[device_index].scan_resp[i]);
-                            strcat(adv_str, tempStr);
-                        }
-                        strcat(adv_str, "\r\n");
-                        APPL_LOG("[APPL]: %s\r\n", adv_str);
-                        uart_write_str((uint8_t *)adv_str, strlen(adv_str));
-                    }
-                    } 
-                    if (var == 1) {
-                    if ((m_device_list[device_index].adv_data_len > 0) && (m_device_list[device_index].scan_resp_len > 0)) {
-                        char adv_str[150] = {0};
-                        
-                        sprintf(adv_str, "+ADV:%02d", device_index);
-                        strcat(adv_str, "\r\n");
-                        APPL_LOG("[APPL]: %s\r\n", adv_str);
-                        uart_write_str((uint8_t *)adv_str, strlen(adv_str));
-                    }
-                    }
-                    if (var == 2) {
-                    if ((m_device_list[device_index].adv_data_len > 0) && (m_device_list[device_index].scan_resp_len > 0)) {
-                        char adv_str[150] = {0};
-                        char tempStr[10] = {0};
-                        
-                        uint8_t battery_level;
-                        
-                        get_battery(device_index, &battery_level);
-                        uint8_t sensor_data_len = m_device_list[device_index].scan_resp_len - 4;
-                        sprintf(adv_str, "+ADV:%02d,%02X,%02X,", device_index, sensor_data_len, battery_level);
-                        for (int i = 4; i < m_device_list[device_index].scan_resp_len; i++) {
-                            sprintf(tempStr, "%02X", m_device_list[device_index].scan_resp[i]);
-                            strcat(adv_str, tempStr);
-                        }
-                        strcat(adv_str, "\r\n");
-                        APPL_LOG("[APPL]: %s\r\n", adv_str);
-                        uart_write_str((uint8_t *)adv_str, strlen(adv_str));
-                    }
-                    }
-                }
-            }
 
             // Look for ESS
             err_code = adv_report_parse(BLE_GAP_AD_TYPE_16BIT_SERVICE_UUID_MORE_AVAILABLE,
@@ -1383,6 +1436,38 @@ static void uart_rx_command_handler(uint8_t *rx, uint8_t rx_len)
         }
         APPL_LOG("[APPL]: Response sent\r\n");
         
+    } else if (strcmp((char *)rx, "AT+R?") == 0) {
+    	uint32_t len;
+    	err_code = app_fifo_read(&m_fifo, NULL, &len);
+    	if (err_code == NRF_SUCCESS && len > 0) {
+    		for (int k = 0; k < len; k++) {
+    			uint8_t b;
+    			err_code = app_fifo_peek(&m_fifo, k, &b);
+    			if (err_code == NRF_SUCCESS) {
+    				if (b == '|') {
+    					uint8_t str[100] = "+ADV:";
+    					uint32_t m = k;
+    					err_code = app_fifo_read(&m_fifo, &str[5], &m);
+    					strcat((char *)str, "\r\nOK\r\n");
+    		            uart_write_str((uint8_t *)str, m + 11);
+    					err_code = app_fifo_get(&m_fifo, str);
+    		            break;
+    				}
+    			} else {
+    				break;
+    			}
+    		}
+    	}
+//        if (err_code == 0) {
+//            uart_write_str((uint8_t *)"OK\r\n", strlen("OK\r\n"));
+//        } else {
+//            uart_write_str((uint8_t *)"ERROR\r\n", strlen("ERROR\r\n"));
+//        }
+        //} else {
+            //uart_write_str((uint8_t *)"ERROR\r\n", strlen("ERROR\r\n"));
+        //}
+        APPL_LOG("[APPL]: Response sent\r\n");
+
     }
 
 }
@@ -1735,20 +1820,24 @@ int main(void)
     bas_c_init();
     radio_notification_init();
 //    send_boot_finished_message();
+    uint32_t err_code = app_fifo_init(&m_fifo, m_tx_buffer, MAX_TX_BUFFER_SIZE);
+    APP_ERROR_CHECK(err_code);
     nrf_gpio_pin_clear(LED_1);
 
     // Start scanning for peripherals and initiate connection
     // with devices that advertise Heart Rate UUID.
     scan_set_default_params();
-    //scan_start();
-    ble_gap_addr_t ess_test_addr;
-    ess_test_addr.addr[5] = 0x00;
-    ess_test_addr.addr[4] = 0x00;
-    ess_test_addr.addr[3] = 0x00;
-    ess_test_addr.addr[2] = 0x00;
-    ess_test_addr.addr[1] = 0x00;
-    ess_test_addr.addr[0] = 0x00;
-    add_device_to_list(ess_test_addr);
+    scan_set_params(1, 0, DEFAULT_SCAN_INTERVAL, DEFAULT_SCAN_WINDOW, 0);
+    scan_set_params(1, 0, 1760, 1680, 0);
+    scan_start();
+    ble_gap_addr_t test_addr;
+    test_addr.addr[5] = 0xD5;
+    test_addr.addr[4] = 0xA9;
+    test_addr.addr[3] = 0xE3;
+    test_addr.addr[2] = 0xC1;
+    test_addr.addr[1] = 0x1B;
+    test_addr.addr[0] = 0xA4;
+    add_device_to_list(test_addr);
 
     for (;; )
     {
