@@ -151,7 +151,7 @@ typedef enum {
     BD_OP_MODE_AIO
 } ble_op_mode_t;
 
-#define MAX_NBR_DEVICES 50
+#define MAX_NBR_DEVICES 10
 typedef struct {
     ble_gap_addr_t  peer_addr;
     ble_op_mode_t   op_mode;
@@ -1827,17 +1827,17 @@ int main(void)
     // Start scanning for peripherals and initiate connection
     // with devices that advertise Heart Rate UUID.
     scan_set_default_params();
-    scan_set_params(1, 0, DEFAULT_SCAN_INTERVAL, DEFAULT_SCAN_WINDOW, 0);
-    scan_set_params(1, 0, 1760, 1680, 0);
-    scan_start();
-    ble_gap_addr_t test_addr;
-    test_addr.addr[5] = 0xD5;
-    test_addr.addr[4] = 0xA9;
-    test_addr.addr[3] = 0xE3;
-    test_addr.addr[2] = 0xC1;
-    test_addr.addr[1] = 0x1B;
-    test_addr.addr[0] = 0xA4;
-    add_device_to_list(test_addr);
+    //scan_set_params(1, 0, DEFAULT_SCAN_INTERVAL, DEFAULT_SCAN_WINDOW, 0);
+    //scan_set_params(1, 0, 1760, 1680, 0);
+    //scan_start();
+//    ble_gap_addr_t test_addr;
+//    test_addr.addr[5] = 0xD5;
+//    test_addr.addr[4] = 0xA9;
+//    test_addr.addr[3] = 0xE3;
+//    test_addr.addr[2] = 0xC1;
+//    test_addr.addr[1] = 0x1B;
+//    test_addr.addr[0] = 0xA4;
+    //add_device_to_list(test_addr);
 
     for (;; )
     {

@@ -103,7 +103,8 @@ void loop()
 {
     // Check if there is incoming data from BLE-module
     if (Serial1.available()) {
-        handleBleData();
+        //handleBleData();
+        handleBleInterrupt();
     }
 
     // TODO: Check if there is incoming data from cloud?
@@ -303,47 +304,47 @@ void setupBleDevices()
                                  0                              // Sensor ID for ThingSpeak Field #8
                                  );
                                  
-    bleDeviceList[1] = BleDevice(BluetoothDeviceAddress(0xCB,0x3C,0x6A,0x2B,0xFF,0x47),
-                                 BD_OP_MODE_ADV,            // BLE operating mode
-                                 123989,                    // ThingSpeak channel number
-                                 "6YEZIFV5NCUHOS6B",        // ThingSpeak write API Key
-                                 SENSOR_ID_TEMPERATURE,
-                                 SENSOR_ID_HUMIDITY,
-                                 SENSOR_ID_AMBIENT_LIGHT,
-                                 SENSOR_ID_BAROMETRIC_PRESSURE,
-                                 SENSOR_ID_CO2,
-                                 0,
-                                 SENSOR_ID_BATTERY_CAPACITY,
-                                 0     // SensorId <-> ThingSpeak Field # mapping
-                                 );
-                                 
-    bleDeviceList[2] = BleDevice(BluetoothDeviceAddress(0xD3,0x00,0x01,0x0C,0xAF,0x68),
-                                 BD_OP_MODE_ADV,            // BLE operating mode
-                                 125355,                    // ThingSpeak channel number
-                                 "YVQ8LY80WU5BKAL7",        // ThingSpeak write API Key
-                                 SENSOR_ID_TEMPERATURE,
-                                 SENSOR_ID_HUMIDITY,
-                                 SENSOR_ID_AMBIENT_LIGHT,
-                                 SENSOR_ID_BAROMETRIC_PRESSURE,
-                                 0,
-                                 0,
-                                 SENSOR_ID_BATTERY_CAPACITY,
-                                 0     // SensorId <-> ThingSpeak Field # mapping
-                                 );
-                                 
-    bleDeviceList[3] = BleDevice(BluetoothDeviceAddress(0xCE,0x25,0xFB,0x5E,0x10,0x93),
-                                 BD_OP_MODE_ADV,            // BLE operating mode
-                                 125357,                    // ThingSpeak channel number
-                                 "0OCCAQYXET38N6ZN",        // ThingSpeak write API Key
-                                 SENSOR_ID_TEMPERATURE,
-                                 SENSOR_ID_HUMIDITY,
-                                 SENSOR_ID_AMBIENT_LIGHT,
-                                 SENSOR_ID_BAROMETRIC_PRESSURE,
-                                 0,
-                                 0,
-                                 SENSOR_ID_BATTERY_CAPACITY,
-                                 0     // SensorId <-> ThingSpeak Field # mapping
-                                 );
+//    bleDeviceList[1] = BleDevice(BluetoothDeviceAddress(0xCB,0x3C,0x6A,0x2B,0xFF,0x47),
+//                                 BD_OP_MODE_ADV,            // BLE operating mode
+//                                 123989,                    // ThingSpeak channel number
+//                                 "6YEZIFV5NCUHOS6B",        // ThingSpeak write API Key
+//                                 SENSOR_ID_TEMPERATURE,
+//                                 SENSOR_ID_HUMIDITY,
+//                                 SENSOR_ID_AMBIENT_LIGHT,
+//                                 SENSOR_ID_BAROMETRIC_PRESSURE,
+//                                 SENSOR_ID_CO2,
+//                                 0,
+//                                 SENSOR_ID_BATTERY_CAPACITY,
+//                                 0     // SensorId <-> ThingSpeak Field # mapping
+//                                 );
+//                                 
+//    bleDeviceList[2] = BleDevice(BluetoothDeviceAddress(0xD3,0x00,0x01,0x0C,0xAF,0x68),
+//                                 BD_OP_MODE_ADV,            // BLE operating mode
+//                                 125355,                    // ThingSpeak channel number
+//                                 "YVQ8LY80WU5BKAL7",        // ThingSpeak write API Key
+//                                 SENSOR_ID_TEMPERATURE,
+//                                 SENSOR_ID_HUMIDITY,
+//                                 SENSOR_ID_AMBIENT_LIGHT,
+//                                 SENSOR_ID_BAROMETRIC_PRESSURE,
+//                                 0,
+//                                 0,
+//                                 SENSOR_ID_BATTERY_CAPACITY,
+//                                 0     // SensorId <-> ThingSpeak Field # mapping
+//                                 );
+//                                 
+//    bleDeviceList[3] = BleDevice(BluetoothDeviceAddress(0xCE,0x25,0xFB,0x5E,0x10,0x93),
+//                                 BD_OP_MODE_ADV,            // BLE operating mode
+//                                 125357,                    // ThingSpeak channel number
+//                                 "0OCCAQYXET38N6ZN",        // ThingSpeak write API Key
+//                                 SENSOR_ID_TEMPERATURE,
+//                                 SENSOR_ID_HUMIDITY,
+//                                 SENSOR_ID_AMBIENT_LIGHT,
+//                                 SENSOR_ID_BAROMETRIC_PRESSURE,
+//                                 0,
+//                                 0,
+//                                 SENSOR_ID_BATTERY_CAPACITY,
+//                                 0     // SensorId <-> ThingSpeak Field # mapping
+//                                 );
 }
 
 
@@ -380,7 +381,8 @@ void addBleDevices()
   
     Serial.println("Adding device(s) to scanlist ...");
     
-    for (int i = 0; i < NBR_OF_BLE_DEVICES; i++) {
+//    for (int i = 0; i < NBR_OF_BLE_DEVICES; i++) {
+    for (int i = 0; i < 1; i++) {
         err_code = ble.addDevice(bleDeviceList[i].getBluetoothDeviceAddress());
         Serial.print("Attempting to add device #"); Serial.println(i);
         if (err_code != 0) {
@@ -531,6 +533,67 @@ void handleBleData()
         #endif
 
     
+}
+
+
+void handleBleInterrupt() {
+    //Serial.println("BleInterrupt");  
+
+    unsigned int const RX_BUF_LEN = 5;
+    char rx[RX_BUF_LEN] = { 0 };
+    uint8_t i = 0;
+    uint8_t rxLen;
+    unsigned long startTime = millis();
+    boolean timedOut = false;
+
+//    Serial.println("Starting reception");
+
+//    i = 0;
+//    while (true) {
+//        if (Serial1.available()) {
+//            rx[i] = Serial1.read();
+//            i++;
+//            if (i > 2) {
+//                break;
+//            }
+//        }
+//    }
+
+    String str = Serial1.readStringUntil('\n');
+    if (str.endsWith("!\r")) {
+        Serial.println(str);
+        ble.getInterruptData();        
+    }
+
+//    Serial.println(str);
+//    Serial.println(rx);
+    
+//    if (rx[0] == '!' &&
+//        rx[1] == '\r' &&
+//        rx[2] == '\n')
+//    {
+//        ble.getInterruptData();        
+//    }
+    
+//    while ((rx[i] != '\n') && (i < RX_BUF_LEN)) {
+//        if (Serial1.available()) {
+//            rx[++i] = Serial1.read();
+//        }
+//        if (millis() - startTime > 1000) {
+//            timedOut = true;
+//            break;
+//        }
+//    }
+//    rx[i-1] = 0;
+//    rxLen = i - 1;
+    //Serial.println(rx);
+//    Serial.println(rxLen);
+
+//    if (timedOut) {
+//        Serial.println("Timed out");
+//        return;
+//    }
+
 }
 
 

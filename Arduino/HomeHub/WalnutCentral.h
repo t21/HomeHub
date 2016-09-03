@@ -15,6 +15,7 @@ class WalnutCentral {
     int setScanParameters();
     int addDevice(BluetoothDeviceAddress address);
     int getAdvertisingMessage(uint8_t deviceIndex);
+    int getInterruptData();
 
   private:
     Stream* _serial;
